@@ -47,7 +47,7 @@
 
 ```
 余烬. Agent 重架构：迈向上下文原生智能（Context-Native Agent）[EB/OL].
-v1.5.2, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
+v1.5.3, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
 ```
 
 GitHub 侧栏的「Cite this repository」可直接导出 APA 与 BibTeX（数据来自 `CITATION.cff`）。
