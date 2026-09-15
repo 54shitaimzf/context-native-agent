@@ -40,7 +40,8 @@ const back = new Set((html.match(/href="#cite-(\d+)-1"/g) || []).map(s => s.matc
 console.log('引用：角标 %d 个、唯一角标 %d 个、条目 %d 条、有反向链接的条目 %d 条', cite, ids.size, refs.size, back.size);
 const missing = [...refs].filter(n => !back.has(n));
 if (missing.length) console.log('   ✗ 缺反向链接的条目：' + missing.join(','));
-const orphan = [...Array(40)].map((_, i) => String(i + 1)).filter(n => !refs.has(n));
+const maxRef = Math.max(...[...refs].map(Number));
+const orphan = [...Array(maxRef)].map((_, i) => String(i + 1)).filter(n => !refs.has(n));
 if (orphan.length) console.log('   ✗ 缺条目的角标：' + orphan.join(','));
 
 const tables = html.match(/<table[^>]*>[\s\S]*?<\/table>/g) || [];
@@ -56,7 +57,15 @@ console.log('表格：%d 块，列数不一致 %d 块', tables.length, bad);
 const ids2 = new Set((html.match(/id="[^"]+"/g) || []).map(s => s.slice(4, -1)));
 const hrefs = [...new Set((html.match(/href="#[^"]+"/g) || []).map(s => s.slice(7, -1)))];
 const dead = hrefs.filter(h => !ids2.has(h));
-console.log('内部链接：%d 个目标，其中 29 个目录项 + 82 个角标 + 40 个回链 + 3 个边注，悬空 %d 个', hrefs.length, dead.length);
+const kinds = { toc: 0, cite: 0, ref: 0, other: 0 };
+for (const h of hrefs) {
+  if (/^(sec|grp)-/.test(h)) kinds.toc++;          // 目录与正文导航组；页边注也指向这些锚点，不额外计数
+  else if (/^cite-/.test(h)) kinds.cite++;
+  else if (/^ref-/.test(h)) kinds.ref++;
+  else kinds.other++;
+}
+console.log('内部链接：%d 个目标（目录与锚点 %d + 角标 %d + 回链 %d + 其他 %d），悬空 %d 个',
+  hrefs.length, kinds.toc, kinds.cite, kinds.ref, kinds.other, dead.length);
 if (dead.length) console.log('   ✗ 找不到锚点：' + dead.slice(0, 10).join(','));
 
 const mnote = (html.match(/class="mnote"/g) || []).length;

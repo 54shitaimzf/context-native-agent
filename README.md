@@ -1,6 +1,6 @@
 # Agent 重架构：迈向上下文原生智能（Context-Native Agent）
 
-一篇约 2.1 万字的中文长文（序言 + 正文 + 三个附录），讨论 LLM Agent 的上下文成本，以及围绕这笔成本该怎么设计 Agent 架构。
+一篇约 2.3 万字的中文长文（序言 + 正文 + 三个附录），讨论 LLM Agent 的上下文成本，以及围绕这笔成本该怎么设计 Agent 架构。
 
 ## 讲了什么
 
@@ -25,7 +25,7 @@
 
 - **[`.md`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.md)** —— 源文件，唯一事实来源
 - **[`.html`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.html)** —— 单文件网页版，公式也在文件里，断网可用
-- **[`.pdf`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.pdf)** —— A4 排版成品，36 页，带页码目录与可点链接
+- **[`.pdf`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.pdf)** —— A4 排版成品，38 页，带页码目录与可点链接
 
 另有 `REVISION.md`（改了哪里、原来是什么、改后是什么，逐条记着），以及一条把 Markdown 渲染成 HTML、PDF 的脚本链。
 
@@ -47,7 +47,7 @@
 
 ```
 余烬. Agent 重架构：迈向上下文原生智能（Context-Native Agent）[EB/OL].
-v1.3.1, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
+v1.4, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
 ```
 
 GitHub 侧栏的「Cite this repository」可直接导出 APA 与 BibTeX（数据来自 `CITATION.cff`）。
@@ -81,6 +81,6 @@ node verify.mjs              # 逐行文字比对、引用双向可达、内部�
 
 `_fonts/` 不在仓库里（四个静态字重，约 45 MB），只在重建 PDF 时用得上：PDF 里的思源黑体/宋体是由变量字体实例化出的静态字重，做法见 `REVISION.md` 第六节。
 
-最后一次交付的校验输出：Markdown 与 HTML 逐行比对 465 行、未命中 0；引用 85 处、40 条参考文献双向可达；26 张表列数一致；109 个内部链接无悬空；成品 A4 36 页、157 个链接、文字落在版心内。
+最后一次交付的校验输出：Markdown 与 HTML 逐行比对 490 行、未命中 0；引用 115 处、52 条参考文献双向可达；26 张表列数一致；133 个内部链接无悬空；成品 A4 38 页、199 个链接、文字落在版心内。
 
 </details>
