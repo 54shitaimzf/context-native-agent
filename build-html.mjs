@@ -2,11 +2,21 @@
 // 用法: node build-html.mjs
 // 说明: 只读 Markdown，绝不修改它；KaTeX 与字体全部内联，离线可用。
 import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const DIR = 'C:/Users/Administrator/Desktop/Context-Native Agent';
+// 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
+const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
 const SRC = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
 const OUT = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.html';
-const KATEX = 'G:/deepseek-harness/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist';
+// KaTeX 的 dist 目录：默认找本仓库的 node_modules，可用 KATEX_DIR 指向别处
+const KATEX = process.env.KATEX_DIR || DIR + '/node_modules/katex/dist';
+if (!fs.existsSync(KATEX + '/katex.min.css')) {
+  console.error('找不到 KaTeX：' + KATEX);
+  console.error('先 `npm i katex@0.16.47`，或用 KATEX_DIR 指向 katex/dist');
+  process.exit(1);
+}
 
 const md = fs.readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n');
 const lines = md.split('\n');
@@ -288,11 +298,12 @@ kcss = kcss.replace(/,\s*url\([^)]*?\.woff\)\s*format\((?:&quot;|"|')woff(?:&quo
 const kjs = fs.readFileSync(KATEX + '/katex.min.js', 'utf8');
 const arjs = fs.readFileSync(KATEX + '/contrib/auto-render.min.js', 'utf8');
 
-const head = fs.readFileSync(DIR + '/.git/HEAD', 'utf8').trim();
+// 版本戳：直接问 git 要短哈希。比"读 .git/HEAD 再解引用"可靠——refs 一旦被 gc 打包，
+// .git/refs/heads/<branch> 就不存在了，那时只会印出 "ref: re" 这种半截串。
 let hash = 'unknown';
 try {
-  hash = head.startsWith('ref: ') ? fs.readFileSync(DIR + '/.git/' + head.slice(5), 'utf8').trim().slice(0, 7) : head.slice(0, 7);
-} catch (e) { hash = head.slice(0, 7); }
+  hash = execSync('git rev-parse --short=7 HEAD', { cwd: DIR, encoding: 'utf8' }).trim() || 'unknown';
+} catch (e) { hash = 'unknown'; }
 const today = new Date().toISOString().slice(0, 10);
 
 const CSS = `

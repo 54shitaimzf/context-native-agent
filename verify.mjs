@@ -1,6 +1,9 @@
 // _verify.mjs —— 交付校验：Markdown 每一行的文字是否都出现在 HTML 里（去掉 Markdown 语法标记后比对）
 import fs from 'node:fs';
-const DIR = 'C:/Users/Administrator/Desktop/Context-Native Agent';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+// 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
+const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
 const SRC = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
 const OUT = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.html';
 const md = fs.readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n').split('\n');

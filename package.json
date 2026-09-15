@@ -1,0 +1,22 @@
+{
+  "name": "context-native-agent",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent 重架构：迈向上下文原生智能（Context-Native Agent）—— 定稿长文与排版构建链",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build:html": "node build-html.mjs",
+    "build:pdf": "node build-pdf.mjs final",
+    "tocpages": "node build-pdf.mjs tocpages",
+    "verify": "node verify.mjs",
+    "measure": "node measure-pdf.mjs",
+    "punctuation:dry": "node normalize-punctuation.mjs"
+  },
+  "devDependencies": {
+    "katex": "0.16.47"
+  }
+}

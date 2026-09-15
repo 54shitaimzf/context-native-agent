@@ -8,9 +8,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 
-const DIR = 'C:/Users/Administrator/Desktop/Context-Native Agent';
+// 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖。
+// 分隔符一律换成正斜杠：DIR 会被拼进 file:// URL（见 injectPdfFonts），
+// Windows 的反斜杠在那里面是非法字符，@font-face 会静默失效。
+const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
 const HTML = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.html';
 const PDF = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf';
 const SHOTS = DIR + '/_shots';
@@ -166,6 +169,11 @@ async function mode_pdf(cdp, sessionId) {
     .map(s => s.replace(/.*\//, '')))];
   console.log('  已写出 PDF：%s KB · %d 页 · %d 个链接', (buf.length / 1024).toFixed(0), pages, links);
   console.log('  嵌入字体：%s', fonts.join('，'));
+  // 中文是否真的嵌进去了，只看这里——不看渲染时的 FontFaceSet（那个查询会因时序返回空串）
+  if (!fonts.some(f => /NotoSansSC-Regular/.test(f))) {
+    console.log('  ! 思源黑体没有进 PDF：_fonts/ 的静态字重没被用上，中文退回了系统字体（体积也会明显变大）');
+    console.log('    常见原因：_fonts/ 缺失，或 DIR 拼出的 file:// URL 不可读（Windows 反斜杠）');
+  }
 }
 
 /* ---------- 版式几何审计：不靠肉眼，直接量 ---------- */
@@ -340,7 +348,9 @@ async function injectPdfFonts(cdp, sessionId) {
   const st = await cdp.eval(sessionId, `(function(){if(document.getElementById('pdffonts'))return 'already';
     var s=document.createElement('style');s.id='pdffonts';s.textContent=${JSON.stringify(css)};document.head.appendChild(s);
     return document.fonts.ready.then(function(){return [].slice.call(document.fonts).filter(function(f){return /PDF /.test(f.family)}).map(function(f){return (f.family+' '+f.weight+' '+f.status).replace('PDF ','')}).join(' | ')})})()`);
-  console.log('  PDF 专用字体：' + (st || '（无）'));
+  // 这里查的是渲染时的 FontFaceSet，会因时序返回空串——它不能当作「没加载」的证据。
+  // 可靠的判据在导出之后：读 PDF 的 /BaseFont，看思源有没有真的嵌进去。
+  console.log('  PDF 专用字体：' + (st === 'already' ? 'already' : (st || '已注入（状态未取到，以导出后的内嵌字体为准）')));
 }
 
 /* ---------- 页边距探针：确认 CSS @page 边距与导出参数没有叠加成双重边距 ---------- */

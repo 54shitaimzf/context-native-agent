@@ -16,6 +16,8 @@
 | `normalize-punctuation.mjs` | 中文标点规范化（默认干跑只打印替换，`--write` 才写盘；`--papers-only` 只改附录） |
 | `fix-font-names.py` | 修正 `wght=600` 实例的名称表（见第八节） |
 | `_tocpages.json` | 目录页码表（由 `build-pdf.mjs tocpages` 生成，`build-html.mjs` 读它渲染目录页码） |
+| `README.md` / `LICENSE` / `LICENSE-CODE` / `THIRD-PARTY.md` | 公开留档所需的说明与许可分工（见第十节） |
+| `.gitattributes` / `package.json` | 换行与语言统计规则、重建所需的依赖声明 |
 
 ## 二、数据来源
 
@@ -122,3 +124,25 @@ py fix-font-names.py             # 600 不在命名实例里，--update-name-tab
 规范化由 `normalize-punctuation.mjs` 完成，规则与安全边界都写在脚本里：**每行内按出现次序配对替换，出现奇数个引号的行一律跳过并报出**（不做猜测，避免把开引号写成闭引号）；干跑结果 108 行 / 372 个，跳过的行数 0；没有引号落在行内代码或数学公式里。替换后全篇 ASCII 直引号 0 个、中文引号左 201 / 右 201（平衡）、ASCII 省略号 0 个。
 
 作者另外决定**不给正文加编号体系**：正文里没有按编号的交叉引用（引用全部指向附录 A2.x / A3.x），而现有 6 个"导航组"是挂在段落上的锚点、并非标题，加编号只会制造一层并不存在的层级。
+
+## 十、公开留档
+
+仓库公开在 <https://github.com/54shitaimzf/context-native-agent>。许可与归属：
+
+| 范围 | 许可 | 文件 |
+| --- | --- | --- |
+| 正文与附录（`.md` / `.pdf` / `.html` 及其中的图表） | CC BY-NC 4.0 | `LICENSE` |
+| 构建与校验脚本（`*.mjs` / `*.py`） | MIT | `LICENSE-CODE` |
+| 第三方组件（KaTeX、思源黑体/宋体、系统兜底字体） | 各自上游许可 | `THIRD-PARTY.md` |
+
+附录3 里的【原文】引用，其文字权利仍属原作者；仓库的许可只覆盖作者自己的表达。
+
+为公开分发做的三处改动，都不涉及正文文字：
+
+1. **脚本路径可移植**。五个脚本里写死的本机绝对路径（`C:/Users/…`）改为从脚本自身位置推导，可用 `DOC_DIR` 覆盖；KaTeX 与 Poppler 的位置改为环境变量优先、只给不带用户名的默认值。原先写死的路径会让别人 clone 之后一个脚本都跑不起来。
+2. **提交作者邮箱归位**。全部 26 个提交的作者与提交者邮箱由 `yujin@localhost` 改写为 GitHub 的 noreply 地址，使提交可归属到账号。改写会改变所有提交的哈希，因此成品页脚的版本戳指向的是旧哈希，重建一次即得新戳。
+3. **补齐仓库元数据**：`README.md`、`LICENSE`、`LICENSE-CODE`、`THIRD-PARTY.md`、`.gitattributes`、`package.json`。其中 `.gitattributes` 把成品 HTML/PDF 标为生成物与文档，免得仓库的语言统计被 770 KB 的渲染产物带成「HTML 项目」。
+
+页脚版本戳的含义：`build-html.mjs` 在构建时向 git 要当前 `HEAD` 的短哈希写进页脚（`git rev-parse --short=7 HEAD`）。成品作为一次提交落在那个提交之上，所以戳总比成品自身的提交早一个——它标记的是**构建时所处的源文件状态**，不是「仓库当前 HEAD」。
+
+这个戳原来的实现是读 `.git/HEAD` 再解引用到 `.git/refs/heads/<branch>`。一旦 refs 被 `git gc` 打包进 `.git/packed-refs`，那个文件就不存在了，页脚会印出 `ref: re` 这样的半截串——本次改由 `git rev-parse` 提供，打包与分离头指针两种情况都正确。

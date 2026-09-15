@@ -10,8 +10,12 @@
 //   2. ASCII 省略号 ... 换成中文省略号 ……
 // 只读/写 Markdown 源文件本身，不碰渲染层。
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const FILE = 'C:/Users/Administrator/Desktop/Context-Native Agent/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
+// 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
+const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
+const FILE = process.env.DOC_MD || DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
 const args = process.argv.slice(2);
 const write = args.includes('--write');
 const papersOnly = args.includes('--papers-only');

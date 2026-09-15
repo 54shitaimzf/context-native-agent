@@ -1,8 +1,14 @@
 // _bbox.mjs —— 用 pdftotext -bbox 量成品 PDF 的真实文字边界（不靠肉眼）
 import { spawnSync } from 'node:child_process';
-const PT = 'D:/texlive/2024/bin/windows/pdftotext.exe';
-const PINFO = 'D:/texlive/2024/bin/windows/pdfinfo.exe';
-const f = process.argv[2] || 'C:/Users/Administrator/Desktop/Context-Native Agent/Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+// 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
+const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
+// Poppler 工具所在目录：默认给 TeX Live 自带的副本，可用 POPPLER_DIR（或 PDFTOTEXT / PDFINFO）覆盖
+const POPPLER = process.env.POPPLER_DIR || 'D:/texlive/2024/bin/windows';
+const PT = process.env.PDFTOTEXT || POPPLER + '/pdftotext.exe';
+const PINFO = process.env.PDFINFO || POPPLER + '/pdfinfo.exe';
+const f = process.argv[2] || DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf';
 const info = spawnSync(PINFO, [f], { encoding: 'utf8' }).stdout || '';
 const pages = +((info.match(/Pages:\s+(\d+)/) || [])[1] || 0);
 const out = spawnSync(PT, ['-bbox', f, '-'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).stdout || '';

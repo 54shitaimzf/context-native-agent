@@ -1,0 +1,12 @@
+# 换行：仓库内一律 LF（现有源文件本来就是 LF，这里把它显式固定下来）
+* text=auto eol=lf
+
+# 二进制：不做行尾转换，也不逐行 diff
+*.pdf   binary
+*.ttf   binary
+*.woff2 binary
+*.png   binary
+
+# 语言统计：成品 HTML 是渲染产物，不该把仓库算成 HTML 项目
+Agent架构革新*.html linguist-documentation linguist-generated
+Agent架构革新*.pdf  linguist-documentation linguist-generated
