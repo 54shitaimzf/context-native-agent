@@ -162,7 +162,7 @@ function chartLevels() { // 三种活法 + 本架构
 }
 function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上下文 build · 前缀重装
   const W = 760, H = 278;
-  const X0 = 162, BW = 126, GAP = 16, SPAN = BW * 4 + GAP * 3, XR = X0 + SPAN;
+  const X0 = 170, BW = 126, GAP = 16, SPAN = BW * 4 + GAP * 3, XR = X0 + SPAN;
   const bx = i => X0 + i * (BW + GAP), cx = i => bx(i) + BW / 2;
   const loop = XR + 18;                      // 回环竖线，画在右侧留白里
   let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="上下文原生架构的一轮：共享前缀、四个分支、合并与坐标申报、新前缀">`;
@@ -183,7 +183,7 @@ function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上�
   s += `<text x="60" y="136" class="cbs" text-anchor="middle">对齐需求</text>`;
   s += `<text x="60" y="154" class="cbs" text-anchor="middle">拆分任务</text>`;
   s += `<text x="60" y="172" class="cbs" text-anchor="middle">定契约与断言</text>`;
-  s += `<text x="135" y="128" class="cn2" text-anchor="middle">委派</text>`;
+  s += `<text x="139" y="130" class="cn2" text-anchor="middle">委派</text>`;
   s += `<line x1="116" y1="134" x2="${X0 - 1}" y2="134" class="cflow" marker-end="url(#arwA)"/>`;
   // 四个分支
   for (let i = 0; i < 4; i++) {
@@ -493,10 +493,10 @@ figcaption{font-size:12px;color:var(--muted);text-align:left;margin-top:7px;line
 .cloop{stroke:var(--accent);stroke-width:1.5;fill:none}
 .cn{font-size:14px;fill:var(--ink);font-weight:600}
 .cbs{font-size:13px;fill:var(--muted)}
-.cen{font-size:12px;fill:var(--muted);letter-spacing:.03em}
+.cen{font-size:13.5px;fill:var(--muted);letter-spacing:.03em}
 .arw{fill:var(--rule-ink)}
 .arwb{fill:var(--accent)}
-.cn2{font-size:11px;fill:var(--muted);letter-spacing:.06em}
+.cn2{font-size:14px;fill:var(--muted);letter-spacing:.06em}
 /* 摘要：比正文小半号并左右缩进，与序言分开 */
 .abs{font-size:15px;line-height:1.82;color:var(--ink-soft);margin:0 1.7em .72em}
 footer{border-top:1px solid var(--rule);margin-top:56px;padding-top:14px;font-size:11px;color:var(--muted);line-height:1.75}
