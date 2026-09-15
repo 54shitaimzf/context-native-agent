@@ -100,5 +100,7 @@ node measure-pdf.mjs         # 实测成品 PDF 的版心与页脚位置
 
 ```
 余烬. Agent 重架构：迈向上下文原生智能（Context-Native Agent）[EB/OL].
-v1.2, 2026-09-15. https://github.com/54shitaimzf/context-native-agent
+v1.2.1, 2026-09-15. https://github.com/54shitaimzf/context-native-agent
 ```
+
+仓库根目录的 `CITATION.cff` 提供同一份引用元数据，GitHub 侧栏据此有「Cite this repository」按钮，可直接导出 APA 与 BibTeX。署名与版本以该文件为准。

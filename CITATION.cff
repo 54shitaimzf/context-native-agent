@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "如果这篇长文对你的工作有帮助，请按下列信息引用。"
+title: "Agent 重架构：迈向上下文原生智能（Context-Native Agent）"
+abstract: "中文长文，约 2.0 万字（序言 + 正文 + 三个附录）。命题是 Agent = 环境 + 上下文 + 模型：上下文不是攒出来的，而是每一轮从 0 构建出来的，内容离开上下文不等于丢失内容。全文用一次 2,068 步任务的真实账单锚定成本账，把判据压成三个可复算的数——每轮「前缀 + 切片」压在 63k 以内、每轮申报量不超过 2.8k、基线的「重发现」量不超过 160–194 token/步——并把所有对己方有利的量设为 0、不利的量往大取。"
+authors:
+  - alias: "余烬"
+type: software
+version: "1.2.1"
+date-released: "2026-09-15"
+license: CC-BY-NC-4.0
+url: "https://github.com/54shitaimzf/context-native-agent"
+repository-code: "https://github.com/54shitaimzf/context-native-agent"
+keywords:
+  - "LLM Agent"
+  - "上下文工程"
+  - "prompt caching"
+  - "agent architecture"
+  - "context-native"
+preferred-citation:
+  type: report
+  title: "Agent 重架构：迈向上下文原生智能（Context-Native Agent）"
+  authors:
+    - alias: "余烬"
+  year: 2026
+  date-released: "2026-09-15"
+  version: "1.2.1"
+  url: "https://github.com/54shitaimzf/context-native-agent"
+  repository-code: "https://github.com/54shitaimzf/context-native-agent"
