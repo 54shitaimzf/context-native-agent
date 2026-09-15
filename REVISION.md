@@ -146,3 +146,8 @@ py fix-font-names.py             # 600 不在命名实例里，--update-name-tab
 页脚版本戳的含义：`build-html.mjs` 在构建时向 git 要当前 `HEAD` 的短哈希写进页脚（`git rev-parse --short=7 HEAD`）。成品作为一次提交落在那个提交之上，所以戳总比成品自身的提交早一个——它标记的是**构建时所处的源文件状态**，不是「仓库当前 HEAD」。
 
 这个戳原来的实现是读 `.git/HEAD` 再解引用到 `.git/refs/heads/<branch>`。一旦 refs 被 `git gc` 打包进 `.git/packed-refs`，那个文件就不存在了，页脚会印出 `ref: re` 这样的半截串——本次改由 `git rev-parse` 提供，打包与分离头指针两种情况都正确。
+
+GitHub 侧有两处已知限制，都不是文件本身的问题：
+
+- **侧栏不显示许可标签**。GitHub 的许可识别不支持 CC BY-NC 4.0——用搜索限定符验证过：`license:cc-by-4.0` 有 113,459 个仓库且能识别，`license:cc-by-nc-4.0` 直接返回 `An invalid license was specified`。CC 系列里它只认 CC0 / CC-BY / CC-BY-SA。`LICENSE` 本身完整有效，许可以 README 的许可表为准。
+- **语言统计**由 `.gitattributes` 决定：成品 HTML/PDF 标为生成物与文档、Markdown 显式计入，所以仓库统计是 Markdown 59% / JavaScript 40%，而不是被 770 KB 的渲染产物带成「HTML 项目」。
