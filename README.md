@@ -62,13 +62,13 @@ AI 干活，靠的是每一轮喂给它的那段内容（行话叫"上下文"）
 | 构建脚本（`*.mjs` / `*.py`） | [MIT](LICENSE-CODE) |
 | 成品里内嵌的第三方组件（思源黑体/宋体、KaTeX） | 见 [THIRD-PARTY.md](THIRD-PARTY.md) |
 
-附录3 里的【原文】引用，文字权利仍属原作者；本仓库的许可只覆盖作者自己的表达。正文在 v1.5.2 与 v1.5.4 做过经作者批准的改动（删掉整节摘要、解空间那一节前移、合并那一步的口径与三处措辞修复），其余改动只有标点规范化，逐条见 `REVISION.md` 第一节。
+附录3 里的【原文】引用，文字权利仍属原作者；本仓库的许可只覆盖作者自己的表达。正文在 v1.5.2、v1.5.4、v1.5.5 做过经作者批准的改动（删掉整节摘要、解空间那一节前移、合并那一步的口径与三处措辞修复、六处定性收口），其余改动只有标点规范化，逐条见 `REVISION.md` 第一节。
 
 ## 引用
 
 ```
 余烬. Agent 重架构：迈向上下文原生智能（Context-Native Agent）[EB/OL].
-v1.5.4, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
+v1.5.5, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
 ```
 
 GitHub 侧栏的「Cite this repository」可直接导出 APA 与 BibTeX（数据来自 `CITATION.cff`）。
