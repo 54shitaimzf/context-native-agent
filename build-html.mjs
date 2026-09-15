@@ -160,6 +160,51 @@ function chartLevels() { // 三种活法 + 本架构
   s += `</svg>`;
   return s;
 }
+function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上下文 build · 前缀重装
+  const W = 760, H = 278;
+  const X0 = 162, BW = 126, GAP = 16, SPAN = BW * 4 + GAP * 3, XR = X0 + SPAN;
+  const bx = i => X0 + i * (BW + GAP), cx = i => bx(i) + BW / 2;
+  const loop = XR + 18;                      // 回环竖线，画在右侧留白里
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="上下文原生架构的一轮：共享前缀、四个分支、合并与坐标申报、新前缀">`;
+  s += `<defs>`
+    + `<marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arw"/></marker>`
+    + `<marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arwb"/></marker>`
+    + `</defs>`;
+  // 共享前缀：所有分支、所有轮次逐字节相同
+  s += `<rect x="${X0}" y="18" width="${SPAN}" height="36" rx="4" class="cboxP"/>`;
+  s += `<text x="${X0 + 16}" y="41" class="cl2">共享缓存前缀　P</text>`;
+  s += `<text x="${XR - 16}" y="41" class="cen" text-anchor="end">逐字节不变 → 缓存命中</text>`;
+  // 环境：共享（分支跑在同一套环境里）
+  s += `<rect x="${X0 - 8}" y="76" width="${SPAN + 16}" height="118" rx="6" class="cenv"/>`;
+  s += `<text x="${X0 + 2}" y="72" class="cen">环境共享</text>`;
+  // 主 Agent：把种子委派给分支行
+  s += `<rect x="4" y="86" width="112" height="96" rx="4" class="cbox"/>`;
+  s += `<text x="60" y="112" class="cn" text-anchor="middle">主 Agent</text>`;
+  s += `<text x="60" y="136" class="cbs" text-anchor="middle">对齐需求</text>`;
+  s += `<text x="60" y="154" class="cbs" text-anchor="middle">拆分任务</text>`;
+  s += `<text x="60" y="172" class="cbs" text-anchor="middle">定契约与断言</text>`;
+  s += `<text x="135" y="128" class="cn2" text-anchor="middle">委派</text>`;
+  s += `<line x1="116" y1="134" x2="${X0 - 1}" y2="134" class="cflow" marker-end="url(#arwA)"/>`;
+  // 四个分支
+  for (let i = 0; i < 4; i++) {
+    s += `<line x1="${cx(i)}" y1="54" x2="${cx(i)}" y2="82" class="cflow" marker-end="url(#arwA)"/>`;
+    s += `<rect x="${bx(i)}" y="86" width="${BW}" height="96" rx="4" class="cbox"/>`;
+    s += `<text x="${cx(i)}" y="112" class="cn" text-anchor="middle">分支 ${i + 1}</text>`;
+    s += `<text x="${cx(i)}" y="140" class="cbs" text-anchor="middle">fork 代码</text>`;
+    s += `<text x="${cx(i)}" y="160" class="cbs" text-anchor="middle">build 种子</text>`;
+    s += `<line x1="${cx(i)}" y1="182" x2="${cx(i)}" y2="224" class="cflow" marker-end="url(#arwA)"/>`;
+  }
+  // 合并与坐标申报
+  s += `<rect x="${X0}" y="228" width="${SPAN}" height="38" rx="4" class="cbox"/>`;
+  s += `<text x="${X0 + 16}" y="252" class="cn">单写者合并　＋　坐标申报 M</text>`;
+  s += `<text x="${XR - 16}" y="252" class="cen" text-anchor="end">→ 新前缀</text>`;
+  // 回到前缀：新前缀成为下一轮的公共前缀
+  s += `<polyline points="${XR},247 ${loop},247 ${loop},36 ${XR - 8},36" class="cloop" marker-end="url(#arwB)"/>`;
+  // 下一轮
+  s += `<polyline points="${X0},247 64,247 64,188" class="cflowD" marker-end="url(#arwA)"/>`;
+  s += `<text x="70" y="241" class="cen">下一轮</text>`;
+  return s + '</svg>';
+}
 function figure(svg, cap) { return `<figure class="fig">${svg}<figcaption>${cap}</figcaption></figure>`; }
 
 /* ---------------- 4.5 第 1 层阅读增强（装置的形状由渲染层给，选哪句由作者在 Markdown 里加粗决定） ----------------
@@ -171,14 +216,6 @@ const CAP_LABEL = /^推论/;      // 推论1/2/3/3′ 是列表标号，不是�
 const TERMS = [
   '[ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]',
   `AI native ${LQ}Git tree${RQ}`,
-];
-const GROUPS = [
-  ['问题的由来', '所以，当我想到这一点的时候'],
-  ['换一个主体', '当我们去审视大语言模型的本质'],
-  ['四个推论', '那么这种理解方式能给我们带来什么启示？'],
-  ['具体实现', '以这一理念出发'],
-  ['相对主流的优势', '具体来说其相对主流'],
-  ['边界与未来', '其有待实验验证的点在于'],
 ];
 const MNOTES = [
   ['全部子Agent回归后', 'A2.4', '这笔账怎么算'],
@@ -228,11 +265,14 @@ for (const b of blocks) {
     const am = plain.match(/^\*作者：(.*)\*$/);
     if (am) { out.push(`<p class="doc-author">作者：${am[1]}</p>`); continue; }
     let idAttr = '';
-    const gi = GROUPS.findIndex(g => plain.startsWith(g[1]));
-    if (curSection.startsWith('正文') && gi >= 0) { const gid = 'grp-' + (gi + 1); idAttr = ` id="${gid}"`; toc.push({ id: gid, level: 3, text: GROUPS[gi][0], sub: true }); }
-    let h = '<p' + idAttr + '>' + b.lines.map(inline).join('<br>') + '</p>';
+    const isAbs = curSection.startsWith('摘要');
+    let h = '<p' + idAttr + (isAbs ? ' class="abs"' : '') + '>' + b.lines.map(inline).join('<br>') + '</p>';
     if (curSection.startsWith('正文')) h = enhance(h, plain, b.ln);
     out.push(h);
+    // 架构拓扑图：紧跟在“以这一理念出发……”这一句之后，正文一字未动
+    if (curSection.startsWith('正文') && plain.startsWith('以这一理念出发')) {
+      out.push(figure(chartArch(), '图 3　上下文原生：上下文不再是需要被管理的缓冲区，而是每轮从环境重新生成、用完即散的一层投影。一轮的动作是——环境维持共享、代码 fork、上下文 build；合并后只把<b>坐标</b>写回前缀，下一轮照坐标重装。共享前缀逐字节不变，所以每轮只为它付一次未命中；分支的上下文随分支消失，原文留在 git 里。数据源：正文“具体实现”一节。'));
+    }
     continue;
   }
   if (b.t === 'quote') {
@@ -400,6 +440,9 @@ body.light .toolbar{margin:18px 0 30px}
   nav,.toolbar{display:none !important}
   #wrap{display:block;max-width:none;padding:0}
   main{max-width:none;padding:0;font-size:10.5pt;line-height:1.75}
+  main h2{font-size:13.5pt;margin:12mm 0 4mm}
+  main h3{font-size:11.5pt;color:#111;margin:7mm 0 2.5mm}
+  main .abs{font-size:9.75pt;line-height:1.72;color:#333;margin:0 7mm .6em}
   .cover,.tocpage{display:block}
   .doc-title,p.doc-author{display:none}
   .cover{display:flex;flex-direction:column;min-height:248mm;break-after:page;page-break-after:always;padding-top:0}
@@ -428,7 +471,7 @@ body.light .toolbar{margin:18px 0 30px}
   blockquote.callout{background:#f2efe9;border-left-color:#b9b4ac}
   figcaption{font-size:8.5pt;line-height:1.5}
   .fig svg{break-inside:avoid}
-  footer{page-break-before:avoid;font-size:8.5pt}
+  footer{page-break-before:avoid;break-inside:avoid;page-break-inside:avoid;font-size:8.5pt}
 }
 .chart{width:100%;height:auto;display:block}
 figcaption{font-size:12px;color:var(--muted);text-align:left;margin-top:7px;line-height:1.6}
@@ -442,6 +485,20 @@ figcaption{font-size:12px;color:var(--muted);text-align:left;margin-top:7px;line
 .cgrid{stroke:var(--rule);stroke-dasharray:2 4}
 .caxis{stroke:var(--rule-ink);stroke-width:1}
 .cempty{fill:none;stroke:#8a8a8a;stroke-width:1;stroke-dasharray:3 2}
+.cboxP{fill:var(--tint-2);stroke:var(--rule-ink);stroke-width:1}
+.cbox{fill:var(--tint);stroke:var(--rule-ink);stroke-width:1}
+.cenv{fill:none;stroke:var(--rule);stroke-width:1;stroke-dasharray:4 4}
+.cflow{stroke:var(--rule-ink);stroke-width:1;fill:none}
+.cflowD{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3;fill:none}
+.cloop{stroke:var(--accent);stroke-width:1.5;fill:none}
+.cn{font-size:14px;fill:var(--ink);font-weight:600}
+.cbs{font-size:13px;fill:var(--muted)}
+.cen{font-size:12px;fill:var(--muted);letter-spacing:.03em}
+.arw{fill:var(--rule-ink)}
+.arwb{fill:var(--accent)}
+.cn2{font-size:11px;fill:var(--muted);letter-spacing:.06em}
+/* 摘要：比正文小半号并左右缩进，与序言分开 */
+.abs{font-size:15px;line-height:1.82;color:var(--ink-soft);margin:0 1.7em .72em}
 footer{border-top:1px solid var(--rule);margin-top:56px;padding-top:14px;font-size:11px;color:var(--muted);line-height:1.75}
 footer .cl{display:block;font-size:9.5px;letter-spacing:.34em;color:var(--muted);margin-bottom:5px}
 footer code{font-size:.94em}
@@ -499,8 +556,7 @@ ${FRONT}
 ${body}
 <footer>
   <span class="cl">版式说明</span>
-  单文件离线版 · 由 <code>build-html.mjs</code> 从 Markdown 定稿渲染（文字逐字一致；胶囊、图与页边注由渲染层生成）<br>
-  版本：<code>${hash}</code> · 生成于 ${today}
+  单文件离线版 · 文字与 Markdown 逐字一致 · 版本 <code>${hash}</code> · ${today}
 </footer>
 </main>
 </div>
@@ -523,8 +579,8 @@ ${body}
 
 fs.writeFileSync(OUT, html, 'utf8');
 console.log('已写出: %s', OUT.split('/').pop());
-console.log('  块 %d，目录项 %d（含正文导航组 %d），角标 %d，内联字体 %d 个', blocks.length, toc.length, toc.filter(t => t.sub).length, citeSeq, fontCount);
-console.log('  封面 + 目录页：目录 %d 行（%d 个二级 / %d 个三级 / %d 个正文导航组）', toc.length, toc.filter(t => !t.sub && t.level === 2).length, toc.filter(t => !t.sub && t.level === 3).length, toc.filter(t => t.sub).length);
+console.log('  块 %d，目录项 %d，角标 %d，内联字体 %d 个', blocks.length, toc.length, citeSeq, fontCount);
+console.log('  封面 + 目录页：目录 %d 行（%d 个二级 / %d 个三级）', toc.length, toc.filter(t => t.level === 2).length, toc.filter(t => t.level === 3).length);
 console.log('  体积 %s KB（其中 KaTeX CSS %s KB / JS %s KB）', (html.length / 1024).toFixed(0), (kcss.length / 1024).toFixed(0), ((kjs.length + arjs.length) / 1024).toFixed(0));
 console.log('  自检：残留占位符 %d，残留 url(fonts/ %d，svg %d 个，表格 %d 个',
   (html.match(/\u0001|%%MN/g) || []).length, (html.match(/url\(fonts\//g) || []).length,
