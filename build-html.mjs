@@ -108,7 +108,7 @@ function chartSteps() { // 四个台阶：单价 ↔ 背多少步
     const y = top + i * rowH, w = Math.max(x(d.steps) - padL, 0);
     s += `<text x="0" y="${y + 17}" class="cl">${d.name}</text>`;
     if (d.steps === 0) {
-      s += `<rect x="${padL}" y="${y + 4}" width="6" height="18" class="cempty"/>`;   // 0 值只画一个标记，不画长度
+      s += `<rect x="${padL}" y="${y + 4}" width="14" height="18" class="cempty"/>`;   // 0 值只画一个标记，不画长度
       s += `<text x="${padL + 14}" y="${y + 18}" class="cv">${d.price}</text>`;
     } else {
       s += `<rect x="${padL}" y="${y + 4}" width="${w}" height="18" fill="${d.color}"/>`;
@@ -124,7 +124,7 @@ function chartLevels() { // 三种活法 + 本架构
     { name: '基线 8%', sub: '不可达', carry: 47.8, bill: 3.33, ours: false, ghost: true },
     { name: '本架构 20%', sub: '', carry: 130.0, bill: 5.70, ours: true },
   ];
-  const W = 760, H = 330, padB = 64, top = 34;
+  const W = 760, H = 346, padB = 64, top = 48;
   const panelW = 330, gap = 40, x0 = 20, x1 = x0 + panelW + gap;
   const barW = 46, OURS = '#33556f', BASE = '#c6c2b9';
   let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="三种活法与本架构的平均占用与账单对比">`;
@@ -214,7 +214,9 @@ function enhance(html, plain, ln) {
     }
   });
   const mi = MNOTES.findIndex(m => plain.startsWith(m[0]));
-  if (mi >= 0) { R.note++; R.hits.push(['边注', ln, MNOTES[mi][1] + ' ' + MNOTES[mi][2]]); h = h.replace(/^<(p|li)([^>]*)>/, '<$1$2>%%MN' + mi + '%%'); }
+  // 注记插在区块**末尾**：屏幕上是绝对定位（位置与源码顺序无关，仍与首行齐平），
+  // 打印时是流内块；若插在开头，列表项会被拆成"孤立项目符号 + 换行正文"。
+  if (mi >= 0) { R.note++; R.hits.push(['边注', ln, MNOTES[mi][1] + ' ' + MNOTES[mi][2]]); h = h.replace(/<\/(p|li)>$/, `%%MN${mi}%%</$1>`); }
   return h;
 }
 
@@ -263,7 +265,7 @@ for (const b of blocks) {
     const isStepsTable = /台阶/.test(b.rows[0]);
     const isLevelsTable = /活法/.test(b.rows[0]);
     out.push(renderTable(b.rows));
-    if (isStepsTable) out.push(figure(chartSteps(), '图 1　一份内容的四种价钱：把单价换算成“背着它走多少步”。数据源：附录2 A2.2（横轴对数刻度，台阶四为 0，用空心条表示）。'));
+    if (isStepsTable) out.push(figure(chartSteps(), '图 1　一份内容的四种价钱：把单价换算成“背着它走多少步”。数据源：附录2 A2.2（横轴对数刻度；台阶四为 0，用空心方块标记）。'));
     if (isLevelsTable) out.push(figure(chartLevels(), '图 2　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，工程上不可达、实测里没有人能走到；本架构一档取 20% 水位、4 分支、申报 10k。数据源：附录2 A2.4 / A2.5。'));
     continue;
   }
@@ -287,7 +289,7 @@ const arjs = fs.readFileSync(KATEX + '/contrib/auto-render.min.js', 'utf8');
 const head = fs.readFileSync(DIR + '/.git/HEAD', 'utf8').trim();
 let hash = 'unknown';
 try {
-  hash = head.startsWith('ref: ') ? fs.readFileSync(DIR + '/' + head.slice(5), 'utf8').trim().slice(0, 7) : head.slice(0, 7);
+  hash = head.startsWith('ref: ') ? fs.readFileSync(DIR + '/.git/' + head.slice(5), 'utf8').trim().slice(0, 7) : head.slice(0, 7);
 } catch (e) { hash = head.slice(0, 7); }
 const today = new Date().toISOString().slice(0, 10);
 
@@ -342,7 +344,7 @@ td.numr,th.numr{text-align:right;font-variant-numeric:tabular-nums;font-feature-
 table.reftable{table-layout:fixed;font-size:8.2pt;line-height:1.5}
 table.reftable td,table.reftable th{overflow-wrap:anywhere}
 table.reftable th:nth-child(1){width:7mm}
-table.reftable th:nth-child(2){width:42mm;padding-right:12px}
+table.reftable th:nth-child(2){width:47mm;padding-right:12px}
 table.reftable th:nth-child(3){width:7mm;padding-right:4px}
 table.reftable th:nth-child(4){width:17mm;padding-right:6px}
 td.refno{white-space:nowrap;font-family:var(--mono);font-size:.9em;color:var(--muted);padding-right:6px}
@@ -442,8 +444,10 @@ figcaption{font-size:12px;color:var(--muted);text-align:left;margin-top:7px;line
 .cax{font-size:13.5px;fill:var(--muted)}
 .cgrid{stroke:var(--rule);stroke-dasharray:2 4}
 .caxis{stroke:var(--rule-ink);stroke-width:1}
-.cempty{fill:none;stroke:var(--rule);stroke-dasharray:3 3}
-footer{border-top:1px solid var(--rule);margin-top:56px;padding-top:14px;font-size:12px;color:var(--muted);line-height:1.8}
+.cempty{fill:none;stroke:#8a8a8a;stroke-width:1;stroke-dasharray:3 2}
+footer{border-top:1px solid var(--rule);margin-top:56px;padding-top:14px;font-size:11px;color:var(--muted);line-height:1.75}
+footer .cl{display:block;font-size:9.5px;letter-spacing:.34em;color:var(--muted);margin-bottom:5px}
+footer code{font-size:.94em}
 @media screen and (max-width:1180px){.mnote{position:static;width:auto;text-align:right;border-top:0;padding-top:0;display:block;margin:-.3em 0 .9em}}
 @media screen and (max-width:940px){nav{display:none}#wrap{padding:0 18px}main{padding-top:32px}body.light main{max-width:none}}
 `;
@@ -497,8 +501,9 @@ ${TOOLBAR}
 ${FRONT}
 ${body}
 <footer>
+  <span class="cl">版式说明</span>
   单文件离线版 · 由 <code>build-html.mjs</code> 从 Markdown 定稿渲染（文字逐字一致，仅渲染层加图与颜色）<br>
-  版本：<code>${hash}</code> · 生成于 ${today} · 正文文字自 <code>8229d01</code> 起未改动
+  版本：<code>${hash}</code> · 生成于 ${today}
 </footer>
 </main>
 </div>
