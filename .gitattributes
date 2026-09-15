@@ -7,6 +7,8 @@
 *.woff2 binary
 *.png   binary
 
-# 语言统计：成品 HTML 是渲染产物，不该把仓库算成 HTML 项目
+# 语言统计：Markdown 是这份仓库的正体，要计入；渲染产物不计入，
+# 否则 770 KB 的成品 HTML 会把仓库标成「HTML 项目」。
+*.md                linguist-documentation=false linguist-detectable=true
 Agent架构革新*.html linguist-documentation linguist-generated
 Agent架构革新*.pdf  linguist-documentation linguist-generated
