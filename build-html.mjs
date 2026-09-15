@@ -288,7 +288,7 @@ const CSS = `
 @media (prefers-color-scheme:dark){:root{--bg:#15171a;--fg:#e6e6e6;--muted:#9aa0a6;--line:#2b2f36;--card:#1b1e22;--code:#22262c;}}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.9 -apple-system,"Segoe UI","Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;text-spacing:normal}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.9 "Microsoft YaHei","Segoe UI","Noto Sans SC","PingFang SC","Source Han Sans SC",sans-serif;text-spacing:normal}
 #wrap{display:flex;gap:32px;max-width:1240px;margin:0 auto;padding:0 24px}
 nav{position:sticky;top:0;align-self:flex-start;height:100vh;overflow:auto;flex:0 0 244px;padding:28px 0;font-size:13px;border-right:1px solid var(--line)}
 nav a{display:block;color:var(--muted);text-decoration:none;padding:3px 10px;border-left:2px solid transparent;line-height:1.5}
@@ -337,6 +337,28 @@ body.no-em .em{font-weight:inherit;background:none;padding:0}
 body.no-em .term{font-family:inherit;background:none;padding:0;font-size:inherit}
 body.no-em .eq{background:none;border:0;font-family:inherit;font-weight:inherit;padding:0;white-space:normal}
 body.no-em .mnote{display:none}
+/* 白底预览：与 PDF/打印观感一致 */
+body.light{--bg:#fff;--fg:#111;--muted:#555;--line:#c9c9c9;--card:#fff;--accent:#1d4ed8;--warm:#b45309;--base:#8a93a0;--code:#f2f2f2;color-scheme:light}
+@page{size:A4;margin:16mm 14mm}
+@media print{
+  :root,body.light{--bg:#fff;--fg:#111;--muted:#555;--line:#c9c9c9;--card:#fff;--accent:#1d4ed8;--warm:#b45309;--base:#8a93a0;--code:#f2f2f2;color-scheme:light}
+  html,body{background:#fff !important;color:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body,main,p,li,td,th,h1,h2,h3,blockquote,figcaption{font-family:"Microsoft YaHei","Noto Sans SC","Segoe UI",sans-serif !important}
+  nav,.toolbar{display:none !important}
+  #wrap{display:block;max-width:none;padding:0}
+  main{max-width:none;padding:0;font-size:11pt;line-height:1.72}
+  .tw{overflow:visible;border-color:#c9c9c9}
+  thead th{position:static}
+  tr,.callout,.fig,table{break-inside:avoid;page-break-inside:avoid}
+  h1,h2,h3{break-after:avoid;page-break-after:avoid}
+  p{orphans:2;widows:2;text-align:justify}
+  a{color:#111;text-decoration:none}
+  a.cite{color:#1d4ed8}
+  .em{background:#eaf1ff;font-weight:700}
+  .mnote{color:#555;border-left-color:#1d4ed8}
+  .eq{background:#eaf1ff;border-color:#9db8ee}
+  footer{page-break-before:avoid}
+}
 .chart{width:100%;height:auto;display:block}
 figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
 .ct{font-size:13px;fill:var(--fg);font-weight:600}
@@ -351,7 +373,7 @@ figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
 .cempty{fill:none;stroke:var(--line);stroke-dasharray:3 3}
 footer{border-top:1px solid var(--line);margin-top:60px;padding-top:14px;font-size:12.5px;color:var(--muted)}
 @media (max-width:900px){nav{display:none}#wrap{padding:0 18px}main{padding-top:32px}}
-@media print{nav,.tw{overflow:visible}.toolbar{display:none}body{background:#fff;font-size:11.5pt}main{max-width:none}h2{page-break-after:avoid}table,.fig,.callout{page-break-inside:avoid}a.cite{color:#000}footer{page-break-before:avoid}}
+@media print{nav,.tw{overflow:visible}body{background:#fff;font-size:11.5pt}main{max-width:none}h2{page-break-after:avoid}table,.fig,.callout{page-break-inside:avoid}a.cite{color:#000}footer{page-break-before:avoid}}
 `;
 
 const tocHtml = toc.map(t => `<a class="lv${t.level}${t.sub ? ' lvsub' : ''}" href="#${t.id}">${t.sub ? '· ' : ''}${t.text.replace(/</g, '&lt;')}</a>`).join('\n');
@@ -364,7 +386,7 @@ body = body.replace(/%%MN(\d+)%%/g, (m, i) => {
   if (!t) { mnMiss.push(target); return ''; }
   return `<a class="mnote" href="#${t.id}">→ ${target}<br>${label}</a>`;
 });
-const TOOLBAR = `<div class="toolbar"><strong>阅读增强</strong><label><input type="checkbox" id="em" checked> 强调 · 专名 · 边注</label><span>Markdown 源文件未改一字</span></div>`;
+const TOOLBAR = `<div class="toolbar"><strong>阅读增强</strong><label><input type="checkbox" id="em" checked> 强调 · 专名 · 边注</label><label><input type="checkbox" id="lt"> 白底（PDF 预览）</label><span>Markdown 源文件未改一字</span></div>`;
 
 const html = `<!doctype html>
 <html lang="zh-CN"><head>
@@ -392,6 +414,8 @@ ${body}
   renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false,ignoredTags:["script","noscript","style","textarea","pre","code","option"]});
   var cb=document.getElementById("em");
   if(cb)cb.addEventListener("change",function(){document.body.classList.toggle("no-em",!cb.checked);});
+  var lt=document.getElementById("lt");
+  if(lt)lt.addEventListener("change",function(){document.body.classList.toggle("light",lt.checked);});
   var links=[].slice.call(document.querySelectorAll("nav a"));
   var map={};links.forEach(function(a){map[a.getAttribute("href").slice(1)]=a;});
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.remove("on");});var a=map[e.target.id];if(a)a.classList.add("on");}})},{rootMargin:"-10% 0px -80% 0px"});
