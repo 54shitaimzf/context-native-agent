@@ -37,7 +37,7 @@
 | 构建脚本（`*.mjs` / `*.py`） | [MIT](LICENSE-CODE) |
 | 成品里内嵌的第三方组件（思源黑体/宋体、KaTeX） | 见 [THIRD-PARTY.md](THIRD-PARTY.md) |
 
-附录3 里的【原文】引用，文字权利仍属原作者；本仓库的许可只覆盖作者自己的表达。正文只在标点规范化时改动过（经作者批准），未增删字句，逐条见 `REVISION.md` 第九节。
+附录3 里的【原文】引用，文字权利仍属原作者；本仓库的许可只覆盖作者自己的表达。正文只在标点规范化时改动过（经作者批准），未增删字句，逐条见 `REVISION.md` 第一节。
 
 ## 引用
 
@@ -69,13 +69,13 @@ node verify.mjs              # 逐行文字比对、引用双向可达、内部�
 | `verify.mjs` | 交付校验 |
 | `measure-pdf.mjs` | 量成品 PDF 里文字的真实位置 |
 | `normalize-punctuation.mjs` | 中文标点规范化，默认只干跑 |
-| `fix-font-names.py` | 修正字重实例的名称表（见 `REVISION.md` 第八节） |
+| `fix-font-names.py` | 修正字重实例的名称表（见 `REVISION.md` 第六节） |
 
 顺序不能颠倒：**先导出 PDF，再截图**——截图用的模拟层会污染导出结果。
 
 环境变量都有默认值，见各脚本头部：`DOC_DIR`（文档目录）、`KATEX_DIR`（KaTeX 位置）、`POPPLER_DIR` / `PDFTOTEXT` / `PDFINFO`（只有 `measure-pdf.mjs` 需要）。
 
-`_fonts/` 不在仓库里（四个静态字重，约 45 MB），只在重建 PDF 时用得上：PDF 里的思源黑体/宋体是由变量字体实例化出的静态字重，做法见 `REVISION.md` 第八节。
+`_fonts/` 不在仓库里（四个静态字重，约 45 MB），只在重建 PDF 时用得上：PDF 里的思源黑体/宋体是由变量字体实例化出的静态字重，做法见 `REVISION.md` 第六节。
 
 最后一次交付的校验输出：Markdown 与 HTML 逐行比对 462 行、未命中 0；引用 82 处、40 条参考文献双向可达；26 张表列数一致；109 个内部链接无悬空；成品 A4 35 页、154 个链接、文字落在版心内。
 

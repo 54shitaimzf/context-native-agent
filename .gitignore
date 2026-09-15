@@ -9,7 +9,7 @@ Desktop.ini
 *.bak
 
 # 构建缓存与中间产物（不随仓库分发）
-# _fonts/    由系统变量字体实例化出的静态字重，见 REVISION.md 第八节
+# _fonts/    由系统变量字体实例化出的静态字重，见 REVISION.md 第六节
 # _shots/    分页截图与成品 PDF 的光栅化页
 # .pdfprofile/  无头浏览器的临时配置目录
 _fonts/

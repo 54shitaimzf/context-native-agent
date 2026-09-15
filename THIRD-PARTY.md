@@ -168,4 +168,4 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 | Google Chrome / Microsoft Edge | 经 DevTools 协议把 HTML 导出为 PDF | 专有软件，仅本机调用 |
 | KaTeX 0.16.47 | 公式渲染，由 `npm i` 安装 | MIT |
 | Poppler（`pdftotext` / `pdfinfo` / `pdffonts`） | 实测 PDF 文字边界、复核内嵌字体 | GPL-2.0 |
-| fontTools | 把可变字体实例化成静态字重（见 `REVISION.md` 第八节） | MIT |
+| fontTools | 把可变字体实例化成静态字重（见 `REVISION.md` 第六节） | MIT |
