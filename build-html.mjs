@@ -23,15 +23,16 @@ const isHead = l => /^#{1,4} /.test(l);
 for (let i = 0; i < lines.length;) {
   const l = lines[i];
   if (!l.trim()) { i++; continue; }
+  const at = i + 1;
   const h = l.match(/^(#{1,4}) (.*)$/);
-  if (h) { blocks.push({ t: 'h' + h[1].length, text: h[2].trim() }); i++; continue; }
-  if (isHr(l)) { blocks.push({ t: 'hr' }); i++; continue; }
-  if (isTable(l)) { const rows = []; while (i < lines.length && isTable(lines[i])) rows.push(lines[i++]); blocks.push({ t: 'table', rows }); continue; }
-  if (isQuote(l)) { const q = []; while (i < lines.length && (isQuote(lines[i]) || (lines[i].trim() === '' && isQuote(lines[i + 1] || '')))) { q.push(lines[i].replace(/^>\s?/, '')); i++; } blocks.push({ t: 'quote', lines: q }); continue; }
-  if (isOl(l)) { const it = []; while (i < lines.length && isOl(lines[i])) it.push(lines[i++].replace(/^\d+\.\s/, '')); blocks.push({ t: 'ol', items: it }); continue; }
-  if (isUl(l)) { const it = []; while (i < lines.length && isUl(lines[i])) it.push(lines[i++].replace(/^-\s/, '')); blocks.push({ t: 'ul', items: it }); continue; }
+  if (h) { blocks.push({ t: 'h' + h[1].length, text: h[2].trim(), ln: at }); i++; continue; }
+  if (isHr(l)) { blocks.push({ t: 'hr', ln: at }); i++; continue; }
+  if (isTable(l)) { const rows = []; while (i < lines.length && isTable(lines[i])) rows.push(lines[i++]); blocks.push({ t: 'table', rows, ln: at }); continue; }
+  if (isQuote(l)) { const q = []; while (i < lines.length && (isQuote(lines[i]) || (lines[i].trim() === '' && isQuote(lines[i + 1] || '')))) { q.push(lines[i].replace(/^>\s?/, '')); i++; } blocks.push({ t: 'quote', lines: q, ln: at }); continue; }
+  if (isOl(l)) { const it = []; while (i < lines.length && isOl(lines[i])) it.push(lines[i++].replace(/^\d+\.\s/, '')); blocks.push({ t: 'ol', items: it, ln: at }); continue; }
+  if (isUl(l)) { const it = []; while (i < lines.length && isUl(lines[i])) it.push(lines[i++].replace(/^-\s/, '')); blocks.push({ t: 'ul', items: it, ln: at }); continue; }
   const p = []; while (i < lines.length && lines[i].trim() && !isHead(lines[i]) && !isTable(lines[i]) && !isQuote(lines[i]) && !isOl(lines[i]) && !isUl(lines[i]) && !isHr(lines[i])) p.push(lines[i++]);
-  blocks.push({ t: 'p', lines: p });
+  blocks.push({ t: 'p', lines: p, ln: at });
 }
 
 /* ---------------- 2. 行内转换 ---------------- */
@@ -148,19 +149,93 @@ function chartLevels() { // 三种活法 + 本架构
 }
 function figure(svg, cap) { return `<figure class="fig">${svg}<figcaption>${cap}</figcaption></figure>`; }
 
+/* ---------------- 4.5 第 1 层阅读增强（只作用于渲染结果，Markdown 一字不动） ---------------- */
+const LQ = String.fromCharCode(0x201c), RQ = String.fromCharCode(0x201d);
+// 强调：结论句 / 定义句 / 边界句（与作者原有的 **粗体** 在观感上分层）
+const EM = [
+  '模型的状态只取决于参数与上下文；Agent的状态取决于环境 + 上下文 + 模型',
+  '内容离开上下文，不再等于失去内容',
+  '成为Harness的一等公民',
+  `<strong>删除</strong>，不可逆；分区是<strong>不构建</strong>，可回取`,
+  `有没有可能，上下文是从一颗纯净的前缀${LQ}种子${RQ}中生长出来的？`,
+  '上下文压缩与剪切，是否还是正确的上下文处理方式呢？',
+  '最大前缀组装',
+  '更是从信息熵/上下文长度两方面确保了模型能力发挥稳定',
+  '有待实验验证',
+  'build上下文',
+  '并行写者N²的冲突',
+  '共享缓存前缀',
+];
+const TERMS = [
+  '[ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]',
+  `AI native ${LQ}Git tree${RQ}`,
+];
+const EQ = [
+  `${LQ}Agent = Harness + Model${RQ}`,
+  `<strong>${LQ}Agent = Environment + Context + Model${RQ}</strong>`,
+];
+const GROUPS = [
+  ['问题的由来', '所以，当我想到这一点的时候'],
+  ['换一个主体', '当我们去审视大语言模型的本质'],
+  ['四个推论', '那么这种理解方式能给我们带来什么启示？'],
+  ['具体实现', '以这一理念出发'],
+  ['相对主流的优势', '具体来说其相对主流'],
+  ['边界与未来', '其有待实验验证的点在于'],
+];
+const MNOTES = [
+  ['全部子Agent回归后', 'A2.4', '这笔账怎么算'],
+  ['在缓存利用层面', 'A3.4', '41 个字符的缓存崩塌'],
+  ['而对于我们这套Git架构', 'A3.4', '同类踩坑：N² 写冲突'],
+];
+const R = { em: 0, term: 0, eq: 0, note: 0, hits: [], cnt: new Map() };
+const bump = (type, t, n = 1) => { const k = type + '|' + t; R.cnt.set(k, (R.cnt.get(k) || 0) + n); };
+const plainOf = s => s.replace(/<[^>]+>/g, '');
+function enhance(html, plain, ln) {
+  let h = html;
+  EQ.forEach(t => {
+    if (R.cnt.get('eq|' + t)) return; // 每个等式只在它首次出现处升格
+    if (h.includes(t)) {
+      bump('eq', t); R.eq++; R.hits.push(['等式', ln, plainOf(t)]);
+      h = h.split(t).join('<span class="eq">' + t.replace(/^<strong>|<\/strong>$/g, '') + '</span>');
+    }
+  });
+  TERMS.forEach(t => {
+    const n = h.split(t).length - 1;
+    if (n) { bump('term', t, n); R.term += n; R.hits.push(['专名', ln, plainOf(t).slice(0, 26) + (n > 1 ? ' ×' + n : '')]); h = h.split(t).join('<span class="term">' + t + '</span>'); }
+  });
+  EM.forEach(t => {
+    const n = h.split(t).length - 1;
+    if (n) { bump('em', t, n); R.em += n; R.hits.push(['强调', ln, plainOf(t).slice(0, 28) + (n > 1 ? ' ×' + n : '')]); h = h.split(t).join('<span class="em">' + t + '</span>'); }
+  });
+  const mi = MNOTES.findIndex(m => plain.startsWith(m[0]));
+  if (mi >= 0) { R.note++; R.hits.push(['边注', ln, MNOTES[mi][1] + ' ' + MNOTES[mi][2]]); h = h.replace(/<\/(p|li)>$/, `%%MN${mi}%%</$1>`); }
+  return h;
+}
+
 /* ---------------- 5. 组装 ---------------- */
 const out = [];
+let curSection = '';
 for (const b of blocks) {
   if (b.t === 'h1') { out.push(`<h1>${inline(b.text)}</h1>`); continue; }
   if (/^h[234]$/.test(b.t)) {
     const raw = Number(b.t.slice(1));
     const lv = raw >= 3 ? raw - 1 : raw; // 文档用 ### 作节、#### 作子节 → 渲染为 h2/h3
     const id = secId(lv, b.text);
+    if (lv === 2) curSection = b.text;
     out.push(`<h${lv} id="${id}">${inline(b.text)}<a class="anchor" href="#${id}" aria-label="链接">#</a></h${lv}>`);
     continue;
   }
   if (b.t === 'hr') { out.push('<hr>'); continue; }
-  if (b.t === 'p') { out.push('<p>' + b.lines.map(inline).join('<br>') + '</p>'); continue; }
+  if (b.t === 'p') {
+    const plain = b.lines.join('');
+    let idAttr = '';
+    const gi = GROUPS.findIndex(g => plain.startsWith(g[1]));
+    if (curSection.startsWith('正文') && gi >= 0) { const gid = 'grp-' + (gi + 1); idAttr = ` id="${gid}"`; toc.push({ id: gid, level: 3, text: GROUPS[gi][0], sub: true }); }
+    let h = '<p' + idAttr + '>' + b.lines.map(inline).join('<br>') + '</p>';
+    if (curSection.startsWith('正文')) h = enhance(h, plain, b.ln);
+    out.push(h);
+    continue;
+  }
   if (b.t === 'quote') {
     const ps = [[]];
     for (const l of b.lines) { if (!l.trim()) { if (ps[ps.length - 1].length) ps.push([]); } else ps[ps.length - 1].push(l); }
@@ -168,7 +243,12 @@ for (const b of blocks) {
     continue;
   }
   if (b.t === 'ol' || b.t === 'ul') {
-    out.push(`<${b.t}>` + b.items.map(i => '<li>' + inline(i) + '</li>').join('') + `</${b.t}>`);
+    const items = b.items.map(t => {
+      let h = '<li>' + inline(t) + '</li>';
+      if (curSection.startsWith('正文')) h = enhance(h, t, b.ln);
+      return h;
+    });
+    out.push(`<${b.t}>` + items.join('') + `</${b.t}>`);
     continue;
   }
   if (b.t === 'table') {
@@ -244,6 +324,19 @@ a.cite:hover{text-decoration:underline}
 a.anchor{opacity:0;margin-left:.4em;color:var(--muted);text-decoration:none;font-size:.8em}
 h2:hover a.anchor,h3:hover a.anchor{opacity:1}
 .fig{margin:1.6em 0 1.8em;padding:10px 6px 4px}
+.toolbar{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 26px}
+.toolbar strong{color:var(--fg);font-weight:600}
+.toolbar label{cursor:pointer;color:var(--fg);display:flex;gap:6px;align-items:center}
+.em{font-weight:700;background:color-mix(in srgb,var(--accent) 11%,transparent);border-radius:3px;padding:0 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.term{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:color-mix(in srgb,var(--fg) 7%,transparent);border-radius:4px;padding:.05em .3em;font-size:.92em}
+.eq{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600;background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:6px;padding:.1em .45em;white-space:nowrap}
+.mnote{float:right;clear:right;margin:0 0 8px 16px;font-size:11px;line-height:1.55;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 7px;max-width:9em;text-decoration:none;text-align:left}
+.mnote:hover{color:var(--accent)}
+nav a.lvsub{font-size:12.5px;color:var(--muted)}
+body.no-em .em{font-weight:inherit;background:none;padding:0}
+body.no-em .term{font-family:inherit;background:none;padding:0;font-size:inherit}
+body.no-em .eq{background:none;border:0;font-family:inherit;font-weight:inherit;padding:0;white-space:normal}
+body.no-em .mnote{display:none}
 .chart{width:100%;height:auto;display:block}
 figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
 .ct{font-size:13px;fill:var(--fg);font-weight:600}
@@ -258,10 +351,20 @@ figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
 .cempty{fill:none;stroke:var(--line);stroke-dasharray:3 3}
 footer{border-top:1px solid var(--line);margin-top:60px;padding-top:14px;font-size:12.5px;color:var(--muted)}
 @media (max-width:900px){nav{display:none}#wrap{padding:0 18px}main{padding-top:32px}}
-@media print{nav,.tw{overflow:visible}body{background:#fff;font-size:11.5pt}main{max-width:none}h2{page-break-after:avoid}table,.fig,.callout{page-break-inside:avoid}a.cite{color:#000}footer{page-break-before:avoid}}
+@media print{nav,.tw{overflow:visible}.toolbar{display:none}body{background:#fff;font-size:11.5pt}main{max-width:none}h2{page-break-after:avoid}table,.fig,.callout{page-break-inside:avoid}a.cite{color:#000}footer{page-break-before:avoid}}
 `;
 
-const tocHtml = toc.map(t => `<a class="lv${t.level}" href="#${t.id}">${t.text.replace(/</g, '&lt;')}</a>`).join('\n');
+const tocHtml = toc.map(t => `<a class="lv${t.level}${t.sub ? ' lvsub' : ''}" href="#${t.id}">${t.sub ? '· ' : ''}${t.text.replace(/</g, '&lt;')}</a>`).join('\n');
+
+let body = out.join('\n');
+const mnMiss = [];
+body = body.replace(/%%MN(\d+)%%/g, (m, i) => {
+  const [, target, label] = MNOTES[Number(i)];
+  const t = toc.find(x => x.text.startsWith(target));
+  if (!t) { mnMiss.push(target); return ''; }
+  return `<a class="mnote" href="#${t.id}">→ ${target}<br>${label}</a>`;
+});
+const TOOLBAR = `<div class="toolbar"><strong>阅读增强</strong><label><input type="checkbox" id="em" checked> 强调 · 专名 · 边注</label><span>Markdown 源文件未改一字</span></div>`;
 
 const html = `<!doctype html>
 <html lang="zh-CN"><head>
@@ -274,7 +377,8 @@ const html = `<!doctype html>
 <div id="wrap">
 <nav>${tocHtml}</nav>
 <main>
-${out.join('\n')}
+${TOOLBAR}
+${body}
 <footer>
   单文件离线版 · 由 <code>build-html.mjs</code> 从 Markdown 定稿渲染（文字逐字一致，仅渲染层加图与颜色）<br>
   版本：<code>${hash}</code> · 生成于 ${today} · 正文文字自 <code>8229d01</code> 起未改动
@@ -286,6 +390,8 @@ ${out.join('\n')}
 <script>
 (function(){
   renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false,ignoredTags:["script","noscript","style","textarea","pre","code","option"]});
+  var cb=document.getElementById("em");
+  if(cb)cb.addEventListener("change",function(){document.body.classList.toggle("no-em",!cb.checked);});
   var links=[].slice.call(document.querySelectorAll("nav a"));
   var map={};links.forEach(function(a){map[a.getAttribute("href").slice(1)]=a;});
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.remove("on");});var a=map[e.target.id];if(a)a.classList.add("on");}})},{rootMargin:"-10% 0px -80% 0px"});
@@ -296,8 +402,14 @@ ${out.join('\n')}
 
 fs.writeFileSync(OUT, html, 'utf8');
 console.log('已写出: %s', OUT.split('/').pop());
-console.log('  块 %d，目录项 %d，角标 %d，内联字体 %d 个', blocks.length, toc.length, citeSeq, fontCount);
+console.log('  块 %d，目录项 %d（含正文导航组 %d），角标 %d，内联字体 %d 个', blocks.length, toc.length, toc.filter(t => t.sub).length, citeSeq, fontCount);
 console.log('  体积 %s KB（其中 KaTeX CSS %s KB / JS %s KB）', (html.length / 1024).toFixed(0), (kcss.length / 1024).toFixed(0), ((kjs.length + arjs.length) / 1024).toFixed(0));
 console.log('  自检：残留占位符 %d，残留 url(fonts/ %d，svg %d 个，表格 %d 个',
-  (html.match(/\u0001/g) || []).length, (html.match(/url\(fonts\//g) || []).length,
+  (html.match(/\u0001|%%MN/g) || []).length, (html.match(/url\(fonts\//g) || []).length,
   (html.match(/<svg /g) || []).length, (html.match(/<table>/g) || []).length);
+console.log('\n  阅读增强：强调 %d 处、专名 %d 处、等式 %d 处、边注 %d 处', R.em, R.term, R.eq, R.note);
+for (const [k, ln, t] of R.hits.sort((a, b) => a[1] - b[1])) console.log('    ' + k + '  L' + ln + '  ' + t);
+const allT = [...EQ.map(t => ['eq', t]), ...TERMS.map(t => ['term', t]), ...EM.map(t => ['em', t])];
+const miss = allT.filter(([k, t]) => !R.cnt.get(k + '|' + t));
+console.log(miss.length ? '  ✗ 未命中的目标：' + miss.map(([k, t]) => k + ':' + plainOf(t).slice(0, 20)).join(' | ') : '  ✓ 所有增强目标都已命中');
+if (mnMiss.length) console.log('  ✗ 边注目标未解析：%s', mnMiss.join(' | '));

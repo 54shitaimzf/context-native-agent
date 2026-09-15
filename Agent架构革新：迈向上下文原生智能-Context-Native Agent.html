@@ -46,6 +46,19 @@ a.cite:hover{text-decoration:underline}
 a.anchor{opacity:0;margin-left:.4em;color:var(--muted);text-decoration:none;font-size:.8em}
 h2:hover a.anchor,h3:hover a.anchor{opacity:1}
 .fig{margin:1.6em 0 1.8em;padding:10px 6px 4px}
+.toolbar{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin:0 0 26px}
+.toolbar strong{color:var(--fg);font-weight:600}
+.toolbar label{cursor:pointer;color:var(--fg);display:flex;gap:6px;align-items:center}
+.em{font-weight:700;background:color-mix(in srgb,var(--accent) 11%,transparent);border-radius:3px;padding:0 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.term{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:color-mix(in srgb,var(--fg) 7%,transparent);border-radius:4px;padding:.05em .3em;font-size:.92em}
+.eq{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600;background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:6px;padding:.1em .45em;white-space:nowrap}
+.mnote{float:right;clear:right;margin:0 0 8px 16px;font-size:11px;line-height:1.55;color:var(--muted);border-left:2px solid var(--accent);padding:2px 0 2px 7px;max-width:9em;text-decoration:none;text-align:left}
+.mnote:hover{color:var(--accent)}
+nav a.lvsub{font-size:12.5px;color:var(--muted)}
+body.no-em .em{font-weight:inherit;background:none;padding:0}
+body.no-em .term{font-family:inherit;background:none;padding:0;font-size:inherit}
+body.no-em .eq{background:none;border:0;font-family:inherit;font-weight:inherit;padding:0;white-space:normal}
+body.no-em .mnote{display:none}
 .chart{width:100%;height:auto;display:block}
 figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
 .ct{font-size:13px;fill:var(--fg);font-weight:600}
@@ -60,12 +73,18 @@ figcaption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px}
 .cempty{fill:none;stroke:var(--line);stroke-dasharray:3 3}
 footer{border-top:1px solid var(--line);margin-top:60px;padding-top:14px;font-size:12.5px;color:var(--muted)}
 @media (max-width:900px){nav{display:none}#wrap{padding:0 18px}main{padding-top:32px}}
-@media print{nav,.tw{overflow:visible}body{background:#fff;font-size:11.5pt}main{max-width:none}h2{page-break-after:avoid}table,.fig,.callout{page-break-inside:avoid}a.cite{color:#000}footer{page-break-before:avoid}}
+@media print{nav,.tw{overflow:visible}.toolbar{display:none}body{background:#fff;font-size:11.5pt}main{max-width:none}h2{page-break-after:avoid}table,.fig,.callout{page-break-inside:avoid}a.cite{color:#000}footer{page-break-before:avoid}}
 </style>
 </head><body>
 <div id="wrap">
 <nav><a class="lv2" href="#sec-1">序言：余烬在剪枝</a>
 <a class="lv2" href="#sec-2">正文：欢迎来到上下文原生智能（Context-Native Agent）的世界</a>
+<a class="lv3 lvsub" href="#grp-1">· 问题的由来</a>
+<a class="lv3 lvsub" href="#grp-2">· 换一个主体</a>
+<a class="lv3 lvsub" href="#grp-3">· 四个推论</a>
+<a class="lv3 lvsub" href="#grp-4">· 具体实现</a>
+<a class="lv3 lvsub" href="#grp-5">· 相对主流的优势</a>
+<a class="lv3 lvsub" href="#grp-6">· 边界与未来</a>
 <a class="lv2" href="#sec-3">附录1：Harness耦合现象的思考 与 Context作为一等公民的必要性</a>
 <a class="lv2" href="#sec-4">附录2：半定量成本分析（已用真实账单锚定）</a>
 <a class="lv3" href="#sec-5">A2.0 计费模型与符号</a>
@@ -88,6 +107,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding-top:14px;font-si
 <a class="lv3" href="#sec-22">A3.7 未采信与不可用清单</a>
 <a class="lv3" href="#sec-23">A3.8 一句话</a></nav>
 <main>
+<div class="toolbar"><strong>阅读增强</strong><label><input type="checkbox" id="em" checked> 强调 · 专名 · 边注</label><span>Markdown 源文件未改一字</span></div>
 <h1>Agent重架构：迈向上下文原生智能（Context-Native Agent）</h1>
 <p>*作者：余烬*</p>
 <h2 id="sec-1">序言：余烬在剪枝<a class="anchor" href="#sec-1" aria-label="链接">#</a></h2>
@@ -102,39 +122,39 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding-top:14px;font-si
 <p>但是这样磕磕绊绊的探索，也让我产生了一个足够疯狂的想法。已知上下文剪枝非常困难，已知上下文积累速度极高，主要来自于模型调用读取的文件慢慢积累，慢慢因为长度和中段被遗忘，然后再次读取...</p>
 <p>我们处在一个上下文不够用的环境下太久了，以至于我们一直在思考如何做减法...那有没有可能，上下文是应该自己长出来的呢？</p>
 <h2 id="sec-2">正文：欢迎来到上下文原生智能（Context-Native Agent）的世界<a class="anchor" href="#sec-2" aria-label="链接">#</a></h2>
-<p>所以，当我想到这一点的时候，一切就豁然开朗了。在过去，上下文极度紧缩，完全不够用的时代，我们花费了不知多少功夫，试图将海量内容塞在上下文里，通过各种索引RAG的方式确保模型能够瞻前顾后，将一切纳入考量，但是随着Deepseek家模型拉开百万上下文的普惠年代，30%上下就开始手动压缩成为了常态（目前平衡信息量与模型能力衰减的甜点级上下文长度在20-30%，不严谨，但是大概为社区主流观点<a class="cite" id="cite-1-1" href="#ref-1">[1]</a><a class="cite" id="cite-2-1" href="#ref-2">[2]</a><a class="cite" id="cite-3-1" href="#ref-3">[3]</a>），那么我们是否也该反思自己：“上下文压缩与剪切，是否还是正确的上下文处理方式呢？”</p>
-<p>究其本源，我想我们要回归一个最基本的问题上：什么是Agent？在目前的社区主流与共识的说法中：“Agent = Harness + Model”。实际上Deepseek甚至将这个理念写入到了他们的招聘要求中。在他们的实践中，甚至也出现了模型与Harness框架耦合才能解锁最高能力的现象。我对这一点其实并不持反对态度。虽然说在客观上这限制了用户API调用的选择范围，但是事实上这就好比人使用自己的手达成通用能力一样，这样的耦合也许有助于达成更高的能力上限。不过，当然更大的原因是Deepseek Harness是一款自由，开源的框架，并非是为了商业目的的强迫。</p>
-<p>回到问题本身，Harness本身并不是什么简单的东西，尤其是学习Claude成熟经验后诞生的各种千奇百怪Harness框架。有的内置各种RAG，Skills，MCP，Tools，以Agent Loop为核心。将Harness视为Agent的组成部分诚然合理，但是这个框架太大，太重，让我们不知道如何去管理。当我们预设了每一分上下文信息的必要性，那必然就要面临顺序，取舍与重读，还有困难的剪枝。历史和实践证明，我们总是习惯性地通过补丁来解决，引入更多的机制，更多的压缩，更多的坐标。可是我在这里想要问下一句，有没有可能，上下文是从一颗纯净的前缀“种子”中生长出来的？</p>
-<p>当我们去审视大语言模型的本质，在它的视角里，并不存在什么所谓“Harness”，甚至就连思考过程都是依靠训练对齐的，它只是一遍遍地处理着语言输入的黑盒函数。决定它输出状态的只有上下文与参数，所有的工具调用，思考过程都是训练对齐的结果。那我想，我们应该拒绝以用户交互的对象为Agent主体的认知错位，事实上：<strong>“Agent = Environment + Context + Model”</strong> 。</p>
-<p>这句话反映的是两个层级：模型的状态只取决于参数与上下文；Agent的状态取决于环境 + 上下文 + 模型。</p>
-<p>那么这种理解方式能给我们带来什么启示？</p>
+<p id="grp-1">所以，当我想到这一点的时候，一切就豁然开朗了。在过去，上下文极度紧缩，完全不够用的时代，我们花费了不知多少功夫，试图将海量内容塞在上下文里，通过各种索引RAG的方式确保模型能够瞻前顾后，将一切纳入考量，但是随着Deepseek家模型拉开百万上下文的普惠年代，30%上下就开始手动压缩成为了常态（目前平衡信息量与模型能力衰减的甜点级上下文长度在20-30%，不严谨，但是大概为社区主流观点<a class="cite" id="cite-1-1" href="#ref-1">[1]</a><a class="cite" id="cite-2-1" href="#ref-2">[2]</a><a class="cite" id="cite-3-1" href="#ref-3">[3]</a>），那么我们是否也该反思自己：“<span class="em">上下文压缩与剪切，是否还是正确的上下文处理方式呢？</span>”</p>
+<p>究其本源，我想我们要回归一个最基本的问题上：什么是Agent？在目前的社区主流与共识的说法中：<span class="eq">“Agent = Harness + Model”</span>。实际上Deepseek甚至将这个理念写入到了他们的招聘要求中。在他们的实践中，甚至也出现了模型与Harness框架耦合才能解锁最高能力的现象。我对这一点其实并不持反对态度。虽然说在客观上这限制了用户API调用的选择范围，但是事实上这就好比人使用自己的手达成通用能力一样，这样的耦合也许有助于达成更高的能力上限。不过，当然更大的原因是Deepseek Harness是一款自由，开源的框架，并非是为了商业目的的强迫。</p>
+<p>回到问题本身，Harness本身并不是什么简单的东西，尤其是学习Claude成熟经验后诞生的各种千奇百怪Harness框架。有的内置各种RAG，Skills，MCP，Tools，以Agent Loop为核心。将Harness视为Agent的组成部分诚然合理，但是这个框架太大，太重，让我们不知道如何去管理。当我们预设了每一分上下文信息的必要性，那必然就要面临顺序，取舍与重读，还有困难的剪枝。历史和实践证明，我们总是习惯性地通过补丁来解决，引入更多的机制，更多的压缩，更多的坐标。可是我在这里想要问下一句，<span class="em">有没有可能，上下文是从一颗纯净的前缀“种子”中生长出来的？</span></p>
+<p id="grp-2">当我们去审视大语言模型的本质，在它的视角里，并不存在什么所谓“Harness”，甚至就连思考过程都是依靠训练对齐的，它只是一遍遍地处理着语言输入的黑盒函数。决定它输出状态的只有上下文与参数，所有的工具调用，思考过程都是训练对齐的结果。那我想，我们应该拒绝以用户交互的对象为Agent主体的认知错位，事实上：<span class="eq">“Agent = Environment + Context + Model”</span> 。</p>
+<p>这句话反映的是两个层级：<span class="em">模型的状态只取决于参数与上下文；Agent的状态取决于环境 + 上下文 + 模型</span>。</p>
+<p id="grp-3">那么这种理解方式能给我们带来什么启示？</p>
 <ul><li><strong>推论1：</strong> 在一个环境受控的Harness框架下，保存一个Agent所需的运行状态无需任何与当前Context无关内容，成本远低于“Agent = Harness + Model”的假设。</li></ul>
 <ul><li><strong>推论2：</strong> 在同一个 Harness 框架下、且环境一致时，给定上下文就能立刻重建一个 Agent 状态。</li></ul>
 <ul><li><strong>推论3（普适）</strong>：上下文不该是 Loop Then Compress，而是按轮 <strong>再生成 → 切片 → 合并 → 重载</strong>（Regenerated, Sliced, Combined, Reloaded）。 这一条不依赖环境：对纯对话系统（无文件系统、无进程、无副作用），它同样成立——上下文照样要重建、切分、合并、重载，只是没有需要维护的环境实体。</li></ul>
 <ul><li><strong>推论3′（Agent 特化）</strong>：当系统存在环境实体（代码、依赖、进程、端口）时，上述四步落到具体对象上即为——<strong>环境维持共享、代码 fork、上下文 build</strong>。</li></ul>
-<p>这三个推论共同指向的并非既有框架的补丁，而是<strong>取消了一个约束</strong>：内容离开上下文，不再等于失去内容。在旧框架里上下文是缓冲区，离开意味着内容丢失；而在新框架里上下文是投影，离开只是此刻无需<a class="cite" id="cite-4-1" href="#ref-4">[4]</a><a class="cite" id="cite-5-1" href="#ref-5">[5]</a>。<strong>压缩与重建的全部差别，就藏在这个等号里</strong>。</p>
-<p>最终，以上述的理念为核心，我们可以推导出下一代Agent范式，与其较为具体的工程实现。我称其为上下文原生智能（Context-Native Agent）。在这一架构下Harness的职责从管理Model转向管理Context与管理一个Agent切片运行所需的环境。Context与Harness复杂框架解耦，作为与模型唯一的交互通道被解耦出来，成为Harness的一等公民。</p>
-<p>以这一理念出发，一种上下文原生智能的具体实现可以以一种AI native “Git tree” 为核心，其分为主Agent与子Agent，具有模型一致性。</p>
-<p>对于任意一个项目，主Agent与子Agent拥有一个共享缓存前缀<a class="cite" id="cite-6-1" href="#ref-6">[6]</a><a class="cite" id="cite-7-1" href="#ref-7">[7]</a>，其为当前系统版本下，必要的代码与意图映射汇总，与必要的系统状态。当一个任务被委派时，主Agent负责与用户对齐需求，并对任务进行拆分，任务的拆分的具体原则以降低耦合度与提高子任务目标的内聚性为主，且对任务的规模进行控制，确保其上下文占用对齐模型能力甜点区间。</p>
+<p>这三个推论共同指向的并非既有框架的补丁，而是<strong>取消了一个约束</strong>：<span class="em">内容离开上下文，不再等于失去内容</span>。在旧框架里上下文是缓冲区，离开意味着内容丢失；而在新框架里上下文是投影，离开只是此刻无需<a class="cite" id="cite-4-1" href="#ref-4">[4]</a><a class="cite" id="cite-5-1" href="#ref-5">[5]</a>。<strong>压缩与重建的全部差别，就藏在这个等号里</strong>。</p>
+<p>最终，以上述的理念为核心，我们可以推导出下一代Agent范式，与其较为具体的工程实现。我称其为上下文原生智能（Context-Native Agent）。在这一架构下Harness的职责从管理Model转向管理Context与管理一个Agent切片运行所需的环境。Context与Harness复杂框架解耦，作为与模型唯一的交互通道被解耦出来，<span class="em">成为Harness的一等公民</span>。</p>
+<p id="grp-4">以这一理念出发，一种上下文原生智能的具体实现可以以一种<span class="term">AI native “Git tree”</span> 为核心，其分为主Agent与子Agent，具有模型一致性。</p>
+<p>对于任意一个项目，主Agent与子Agent拥有一个<span class="em">共享缓存前缀</span><a class="cite" id="cite-6-1" href="#ref-6">[6]</a><a class="cite" id="cite-7-1" href="#ref-7">[7]</a>，其为当前系统版本下，必要的代码与意图映射汇总，与必要的系统状态。当一个任务被委派时，主Agent负责与用户对齐需求，并对任务进行拆分，任务的拆分的具体原则以降低耦合度与提高子任务目标的内聚性为主，且对任务的规模进行控制，确保其上下文占用对齐模型能力甜点区间。</p>
 <p>然后，其将为每个子Agent创建一个分支，具体而言：maintain environment, fork code, then build context as a seed。<strong>每轮都要走一遍分叉、定契约与准备合并，这笔开销与任务多长无关</strong><a class="cite" id="cite-8-1" href="#ref-8">[8]</a>。每个子Agent的工作会作用于分支的虚拟文件上，以提交记录的形式落盘。</p>
-<p>任务解耦完毕后，主agent将会运用其对于代码整体的理解，为每个子Agent委派上下文中预置的文件内容，然后由Harness进行最大前缀组装<a class="cite" id="cite-38-1" href="#ref-38">[38]</a>。且主Agent会制定断言与测试作为合并前必要验收标准。</p>
+<p>任务解耦完毕后，主agent将会运用其对于代码整体的理解，为每个子Agent委派上下文中预置的文件内容，然后由Harness进行<span class="em">最大前缀组装</span><a class="cite" id="cite-38-1" href="#ref-38">[38]</a>。且主Agent会制定断言与测试作为合并前必要验收标准。</p>
 <p>任务过程中，子Agent的动作可能或主动或被动提交Signal，供主Agent进行环境观察与调度。也就是说，这一具体设计类似于一种响应式Agent调度框架。</p>
-<p>全部子Agent回归后，由主Agent/委派Agent进行代码合并，取长补短，并进行最终测试与汇报，并同时会对系统状态、代码映射等进行<strong>坐标申报</strong>——写下"东西在哪里"，由 Harness 按坐标把原文装配成新的前缀<a class="cite" id="cite-9-1" href="#ref-9">[9]</a>。（这一步是<strong>写地址</strong>，不是<strong>重写正文</strong>：写地址短，重写正文长，两者的价钱差一个量级，附录2 会算这笔账。）这个新的前缀将会成为下一次执行时候的公共前缀，其作为全局理解对于之后的主Agent任务委派与子Agent的全局观起到指导作用，是衔尾蛇循环重启自己生命历程的步骤。</p>
-<p>综上为我为上下文原生智能（Context-Native Agent）设计的一种Git Base的基础架构。其具有理解/执行模型解耦，过程透明可理解，并行效率高，各个Agent可复用现有单流程Agent上下文管理成熟经验，前缀缓存利用率高<a class="cite" id="cite-10-1" href="#ref-10">[10]</a><a class="cite" id="cite-11-1" href="#ref-11">[11]</a>，且规避了上下文长度瓶颈，更是从信息熵/上下文长度两方面确保了模型能力发挥稳定。</p>
-<p>具体来说其相对主流，定性可能具有的优势：</p>
-<ul><li>在上下文层面：每个子Agent只会被给定极其干净的 [ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]，作为其生长出果实的“种子”。这样干净的上下文有助于模型立刻进行工作，减少读取的工具调用次数和探索信息的不可控，但因为只是种子，也保留了发挥空间与一定的不可控风险。在具体的工程实现上，如果Raw Files Assigned段太长，则考虑仅先放入公共前缀部分，后续内容通过一个特定工具按需取用<a class="cite" id="cite-9-2" href="#ref-9">[9]</a>。</li></ul>
-<ul><li>在缓存利用层面：每个子Agent共享大量共同头，甚至Raw Files之前的内容可以与主Agent共享缓存前缀，等价于将所有只需要探索一次的内容的复利控制在了每个子Agent分区中，上下文累计只以子Agent结出的果实的形式回归主干，被吸收利用。这种共享有个前提：<strong>装配时段序稳定</strong><a class="cite" id="cite-12-1" href="#ref-12">[12]</a>——前缀为了信息密度每轮整体重写，但段序一动不动，变动的只落在尾部，没变的部分逐字节相同。而分支那份上下文本身并不回归，它随分支一起消失，<strong>消失的只是"曾经构建在上下文里"，不是内容</strong>。而根据Git与软件工程的成熟经验，一次合并就意味着项目意图/功能结构的变更，此时主Agent上下文也是时候进行更新与重启了，最终做到每个目标实现时，上下文长度几乎不触及压缩阈值，每次变更只进行一次干净彻底的探索，不带着压缩后信息密度高却丢失细节的信息包袱。</li></ul>
+<p>全部子Agent回归后，由主Agent/委派Agent进行代码合并，取长补短，并进行最终测试与汇报，并同时会对系统状态、代码映射等进行<strong>坐标申报</strong>——写下"东西在哪里"，由 Harness 按坐标把原文装配成新的前缀<a class="cite" id="cite-9-1" href="#ref-9">[9]</a>。（这一步是<strong>写地址</strong>，不是<strong>重写正文</strong>：写地址短，重写正文长，两者的价钱差一个量级，附录2 会算这笔账。）这个新的前缀将会成为下一次执行时候的公共前缀，其作为全局理解对于之后的主Agent任务委派与子Agent的全局观起到指导作用，是衔尾蛇循环重启自己生命历程的步骤。<a class="mnote" href="#sec-9">→ A2.4<br>这笔账怎么算</a></p>
+<p>综上为我为上下文原生智能（Context-Native Agent）设计的一种Git Base的基础架构。其具有理解/执行模型解耦，过程透明可理解，并行效率高，各个Agent可复用现有单流程Agent上下文管理成熟经验，前缀缓存利用率高<a class="cite" id="cite-10-1" href="#ref-10">[10]</a><a class="cite" id="cite-11-1" href="#ref-11">[11]</a>，且规避了上下文长度瓶颈，<span class="em">更是从信息熵/上下文长度两方面确保了模型能力发挥稳定</span>。</p>
+<p id="grp-5">具体来说其相对主流，定性可能具有的优势：</p>
+<ul><li>在上下文层面：每个子Agent只会被给定极其干净的 <span class="term">[ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]</span>，作为其生长出果实的“种子”。这样干净的上下文有助于模型立刻进行工作，减少读取的工具调用次数和探索信息的不可控，但因为只是种子，也保留了发挥空间与一定的不可控风险。在具体的工程实现上，如果Raw Files Assigned段太长，则考虑仅先放入公共前缀部分，后续内容通过一个特定工具按需取用<a class="cite" id="cite-9-2" href="#ref-9">[9]</a>。</li></ul>
+<ul><li>在缓存利用层面：每个子Agent共享大量共同头，甚至Raw Files之前的内容可以与主Agent<span class="em">共享缓存前缀</span>，等价于将所有只需要探索一次的内容的复利控制在了每个子Agent分区中，上下文累计只以子Agent结出的果实的形式回归主干，被吸收利用。这种共享有个前提：<strong>装配时段序稳定</strong><a class="cite" id="cite-12-1" href="#ref-12">[12]</a>——前缀为了信息密度每轮整体重写，但段序一动不动，变动的只落在尾部，没变的部分逐字节相同。而分支那份上下文本身并不回归，它随分支一起消失，<strong>消失的只是"曾经构建在上下文里"，不是内容</strong>。而根据Git与软件工程的成熟经验，一次合并就意味着项目意图/功能结构的变更，此时主Agent上下文也是时候进行更新与重启了，最终做到每个目标实现时，上下文长度几乎不触及压缩阈值，每次变更只进行一次干净彻底的探索，不带着压缩后信息密度高却丢失细节的信息包袱。<a class="mnote" href="#sec-19">→ A3.4<br>41 个字符的缓存崩塌</a></li></ul>
 <ul><li>在透明度层面：主次分明，探索思考，需求对齐与实际落地解耦，交互均有signal可查，代码，架构与功能变更清晰可确认。</li></ul>
 <ul><li>在模型适配性层面：可对齐每个模型所需求的最优上下文形状。</li></ul>
 <ul><li>在模型能力层面：主要收益来自于信息熵的降低与上下文长度可控，中段迷失和能力下降被有效控制<a class="cite" id="cite-13-1" href="#ref-13">[13]</a><a class="cite" id="cite-34-1" href="#ref-34">[34]</a>。</li></ul>
-<p>其有待实验验证的点在于任务规模与解耦设计对于成本与能力的具体影响。但是，随着Goal模式等交互模式的兴起，任务的复杂度在上升，且逐渐变得更加高层，与实现无关。因此，传统的上下文累计思路必然会受到对齐需求与探索时期复利的反噬，哪怕是压缩之后也一样。</p>
-<p>而对于我们这套Git架构，越是随着任务的规模增大与目的的实现无关，就越可以被细化为边界清晰、数量可控、架构解耦的落地分支，并由主Agent一次生成一份稳定的、共享的、能回答"这个功能会落在哪些结构上"的项目意图映射与清晰边界的架构契约。最终规避并行写者N²的冲突<a class="cite" id="cite-14-1" href="#ref-14">[14]</a><a class="cite" id="cite-15-1" href="#ref-15">[15]</a>，因为那是在任务高度耦合的具体实现目标下的不理想情况。当然，具体方面的优化打磨，不易解耦的任务，我们的架构能以付出轻微额外成本为代价，即可轻松回退到主Agent/少分支结构上。</p>
-<p>我相信build上下文会是上限更高，更符合未来需求与趋势的更优选择。Git管理只是我结合软件工程经验给定的一个具体实现，只要思想存在，就一定会涌现出更多优秀设计。而当前Git架构下去，困难点在于虚拟文件的编译与测试、环境稳定性维护。</p>
+<p id="grp-6">其<span class="em">有待实验验证</span>的点在于任务规模与解耦设计对于成本与能力的具体影响。但是，随着Goal模式等交互模式的兴起，任务的复杂度在上升，且逐渐变得更加高层，与实现无关。因此，传统的上下文累计思路必然会受到对齐需求与探索时期复利的反噬，哪怕是压缩之后也一样。</p>
+<p>而对于我们这套Git架构，越是随着任务的规模增大与目的的实现无关，就越可以被细化为边界清晰、数量可控、架构解耦的落地分支，并由主Agent一次生成一份稳定的、共享的、能回答"这个功能会落在哪些结构上"的项目意图映射与清晰边界的架构契约。最终规避<span class="em">并行写者N²的冲突</span><a class="cite" id="cite-14-1" href="#ref-14">[14]</a><a class="cite" id="cite-15-1" href="#ref-15">[15]</a>，因为那是在任务高度耦合的具体实现目标下的不理想情况。当然，具体方面的优化打磨，不易解耦的任务，我们的架构能以付出轻微额外成本为代价，即可轻松回退到主Agent/少分支结构上。<a class="mnote" href="#sec-19">→ A3.4<br>同类踩坑：N² 写冲突</a></p>
+<p>我相信<span class="em">build上下文</span>会是上限更高，更符合未来需求与趋势的更优选择。Git管理只是我结合软件工程经验给定的一个具体实现，只要思想存在，就一定会涌现出更多优秀设计。而当前Git架构下去，困难点在于虚拟文件的编译与测试、环境稳定性维护。</p>
 <p>而在更加遥远的未来，当大模型的输出速度成为瓶颈的时候，缓存架构的优秀是否也意味着，首Token和平均Token都能大大提高<a class="cite" id="cite-16-1" href="#ref-16">[16]</a><a class="cite" id="cite-17-1" href="#ref-17">[17]</a>？具有实际生产价值的模型规模上限得到扩充？不过这些都是当前架构成为主流顺带来的好处罢了，总之，它意在扭转还没有回头的迟滞当下，是面向未来以工程复杂度换取落地价值的优秀架构。现在的大模型架构革新，以收敛难度与炸炉风险换取能力上限，而Harness架构的革新成本与风险，可是要小得多，难道不值得探索吗？</p>
 <p>Context成为一等公民，意味着我们在文件治理，项目管理，操作系统与软件工程的成熟经验，均可以套用在管理Agent状态的切片上，实现高度透明，机械化，有保障的Agent协作，助力大模型在前AGI时代发挥能力上限。</p>
 <p>然而，本文真正的价值不只在 Git 树与围绕它打造的这个系统上。Git 只是一个具体实现，粗糙、可替换，甚至可能是错的。真正被换掉的是<strong>问题的解空间</strong>：</p>
 <ul><li>在 <code>Agent = Harness + Model</code> 下，上下文是一段必须被管理的缓冲区。所有解法因此被逼向同一个方向——压缩、裁剪、摘要、检索——它们的共同点是<strong>都要在信息量与长度之间做取舍</strong>；而只要做取舍，就必然丢东西，就必然要赌。补丁套补丁、坐标套坐标，都是在这个解空间里打转。</li></ul>
-<ul><li>在 <code>Agent = Environment + Context + Model</code> 下，上下文是一份<strong>可以从状态重建的投影</strong>。这一步换掉的正是那个取舍：压缩是<strong>删除</strong>，不可逆；分区是<strong>不构建</strong>，可回取。既然上下文随时能从"环境 + 协议"重建，不构建它就<strong>不再等于失去内容</strong>。这个等号一解开，压缩就不再是唯一出路——而分区、委派、构建之所以在旧框架下显得奢侈，恰恰因为旧框架里没有"可重建"这个前提。</li></ul>
+<ul><li>在 <code>Agent = Environment + Context + Model</code> 下，上下文是一份<strong>可以从状态重建的投影</strong>。这一步换掉的正是那个取舍：压缩是<span class="em"><strong>删除</strong>，不可逆；分区是<strong>不构建</strong>，可回取</span>。既然上下文随时能从"环境 + 协议"重建，不构建它就<strong>不再等于失去内容</strong>。这个等号一解开，压缩就不再是唯一出路——而分区、委派、构建之所以在旧框架下显得奢侈，恰恰因为旧框架里没有"可重建"这个前提。</li></ul>
 <h2 id="sec-3">附录1：Harness耦合现象的思考 与 Context作为一等公民的必要性<a class="anchor" href="#sec-3" aria-label="链接">#</a></h2>
 <p>Deepseek V4 Pro-0813在实际发布后饱受诟病，其被质疑为刷分模型，在除了极简模式 + 类linux之外环境下，均难以产生较好的结果。在上文中，我也曾经提到了关于Harness作为模型原生手脚的比喻，耦合以发挥模型能力上限。</p>
 <p>而当我们放下个人视角，从模型训练的角度，Tools是否有泛化的必要与泛化的可能？</p>
@@ -347,6 +367,8 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding-top:14px;font-si
 <script>
 (function(){
   renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false,ignoredTags:["script","noscript","style","textarea","pre","code","option"]});
+  var cb=document.getElementById("em");
+  if(cb)cb.addEventListener("change",function(){document.body.classList.toggle("no-em",!cb.checked);});
   var links=[].slice.call(document.querySelectorAll("nav a"));
   var map={};links.forEach(function(a){map[a.getAttribute("href").slice(1)]=a;});
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.remove("on");});var a=map[e.target.id];if(a)a.classList.add("on");}})},{rootMargin:"-10% 0px -80% 0px"});
