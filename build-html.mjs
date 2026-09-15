@@ -174,7 +174,7 @@ function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上�
   s += `<rect x="${X0}" y="16" width="${SPAN}" height="46" rx="4" class="cboxP"/>`;
   s += `<text x="${X0 + 16}" y="36" class="cl2">共享缓存前缀　P</text>`;
   s += `<text x="${X0 + 16}" y="54" class="cen">人设与工具　·　意图映射　·　系统状态</text>`;
-  s += `<text x="${XR - 16}" y="42" class="cen" text-anchor="end">逐字节不变 → 缓存命中</text>`;
+  s += `<text x="${XR - 16}" y="36" class="cen" text-anchor="end">逐字节不变 → 缓存命中</text>`;
   // 环境：共享（分支跑在同一套环境里）
   s += `<rect x="${X0 - 8}" y="84" width="${SPAN + 16}" height="128" rx="6" class="cenv"/>`;
   s += `<text x="${X0 + 2}" y="80" class="cen">环境共享</text>`;
