@@ -292,7 +292,7 @@ for (const b of blocks) {
     const isLevelsTable = /活法/.test(b.rows[0]);
     out.push(renderTable(b.rows));
     if (isStepsTable) out.push(figure(chartSteps(), '图 1　一份内容的四种价钱：把单价换算成“背着它走多少步”。数据源：附录2 A2.2（横轴对数刻度；台阶四为 0，用空心方块标记）。'));
-    if (isLevelsTable) out.push(figure(chartLevels(), '图 2　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，工程上不可达、实测里没有人能走到；本架构一档取 20% 水位、4 分支、更新量 10k。数据源：附录2 A2.4 / A2.5。'));
+    if (isLevelsTable) out.push(figure(chartLevels(), '图 2　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，而串行又不拆分就必须带着足量的信息干活，所以那只是纸面点，实测里也没有人走到；本架构一档取 20% 水位、4 分支、更新量 10k。数据源：附录2 A2.4 / A2.5。'));
     continue;
   }
 }
@@ -391,7 +391,7 @@ h2:hover a.anchor,h3:hover a.anchor{opacity:1}
    两个内边距都是量出来的：①宽胶囊常整句落在行尾，左右内边距稍大就顶出版心（0.34em 时右溢 3px）；
    ②竖直内边距每多一分，同一段里相邻两行的胶囊就靠近一分（0.1em 时只隔 3px，连读像给整段加了底），
    所以宽胶囊竖直归零——底色带正好贴住字身框，相邻行之间留出约 2mm 白缝。 */
-.em{font-weight:700;background:var(--tint);border-radius:2px;padding:.02em .2em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.em{font-weight:700;background:var(--tint);border-radius:2px;padding:.02em .2em;white-space:nowrap;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .claim{font-weight:700;background:var(--tint-2);border-radius:2px;padding:0 .09em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .term{font-family:var(--mono);background:var(--tint);border-radius:3px;padding:.1em .34em;font-size:.87em}
 /* ---- 页边注：屏幕上落在正文右侧留白、与所注段落首行齐平 ----

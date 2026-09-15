@@ -196,7 +196,11 @@ async function audit(cdp, sessionId) {
       if (n.closest('.mnote,svg,.katex,.katex-display')) return;
       var r = n.getBoundingClientRect();
       if (r.width === 0) return;
-      if (r.right - mr.right > 1.5) over.push(n.tagName.toLowerCase() + (n.className ? '.' + String(n.className).split(' ')[0] : '') + ' 右溢 ' + Math.round(r.right - mr.right) + 'px');
+      if (r.right - mr.right > 1.5) {
+        var frs = [].slice.call(n.getClientRects());
+        over.push(n.tagName.toLowerCase() + (n.className ? '.' + String(n.className).split(' ')[0] : '') + (n.textContent ? '「' + n.textContent.slice(0, 12) + '」' : '') + ' 右溢 ' + Math.round(r.right - mr.right) + 'px'
+          + '（行内片段 ' + frs.length + ' 个，末段 ' + Math.round(frs[frs.length-1].width) + 'px，段首距版心左 ' + Math.round(r.left - mr.left) + 'px）');
+      }
       if (r.left < mr.left - 1.5) over.push(n.tagName.toLowerCase() + ' 左溢 ' + Math.round(mr.left - r.left) + 'px');
     });
     var svgClip = [];
