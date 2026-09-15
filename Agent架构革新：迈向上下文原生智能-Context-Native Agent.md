@@ -54,11 +54,11 @@
 
 
 
-所以，当我想到这一点的时候，一切就豁然开朗了。在过去，上下文极度紧缩，完全不够用的时代，我们花费了不知多少功夫，试图将海量内容塞在上下文里，通过各种索引RAG的方式确保模型能够瞻前顾后，将一切纳入考量，但是随着Deepseek家模型拉开百万上下文的普惠年代，30%上下就开始手动压缩成为了常态（目前平衡信息量与模型能力衰减的甜点级上下文长度在20-30%，不严谨，但是大概为社区主流观点），那么我们是否也该反思自己：“上下文压缩与剪切，是否还是正确的上下文处理方式呢？”
+所以，当我想到这一点的时候，一切就豁然开朗了。在过去，上下文极度紧缩，完全不够用的时代，我们花费了不知多少功夫，试图将海量内容塞在上下文里，通过各种索引RAG的方式确保模型能够瞻前顾后，将一切纳入考量，但是随着Deepseek家模型拉开百万上下文的普惠年代，30%上下就开始手动压缩成为了常态（目前平衡信息量与模型能力衰减的甜点级上下文长度在20-30%，不严谨，但是大概为社区主流观点[1][2][3]），那么我们是否也该反思自己：“上下文压缩与剪切，是否还是正确的上下文处理方式呢？”
 
 
 
-究其本源，我想我们要回归一个最基本的问题上：什么是Agent？在目前的社区主流与共识的说法中：“Agent = Harness + Model”。实际上Deepseek甚至将这个理念写入到了他们的招聘要求中。在他们的实践中，甚至也出现了模型与Harness框架耦合才能解锁最高能力的现象。我对这一点其实并不持反对态度。虽然说在客观上这限制了用户API调用的选择范围，但是事实上这就好比人使用自己的手达成通用能力一样，这样的耦合也许有助于达成更高的能力上限。不过，当然更大的原因是Deepseek Harness是一款自由，开源的框架，并非是为了商业目的的强迫。
+究其本源，我想我们要回归一个最基本的问题上：什么是Agent？在目前的社区主流与共识的说法中：“Agent = Harness + Model”。实际上Deepseek甚至将这个理念写入到了他们的招聘要求中[4]。在他们的实践中，甚至也出现了模型与Harness框架耦合才能解锁最高能力的现象。我对这一点其实并不持反对态度。虽然说在客观上这限制了用户API调用的选择范围，但是事实上这就好比人使用自己的手达成通用能力一样，这样的耦合也许有助于达成更高的能力上限。不过，当然更大的原因是Deepseek Harness是一款自由，开源的框架，并非是为了商业目的的强迫。
 
 
 
@@ -86,7 +86,7 @@
   
   
 
-这三个推论共同指向的并非既有框架的补丁，而是**取消了一个约束**：内容离开上下文，不再等于失去内容。在旧框架里上下文是缓冲区，离开意味着内容丢失；而在新框架里上下文是投影，离开只是此刻无需。**压缩与重建的全部差别，就藏在这个等号里**。
+这三个推论共同指向的并非既有框架的补丁，而是**取消了一个约束**：内容离开上下文，不再等于失去内容。在旧框架里上下文是缓冲区，离开意味着内容丢失；而在新框架里上下文是投影，离开只是此刻无需[5][6]。**压缩与重建的全部差别，就藏在这个等号里**。
 
 
 
@@ -98,15 +98,15 @@
 
 
 
-对于任意一个项目，主Agent与子Agent拥有一个共享缓存前缀，其为当前系统版本下，必要的代码与意图映射汇总，与必要的系统状态。当一个任务被委派时，主Agent负责与用户对齐需求，并对任务进行拆分，任务的拆分的具体原则以降低耦合度与提高子任务目标的内聚性为主，且对任务的规模进行控制，确保其上下文占用对齐模型能力甜点区间。
+对于任意一个项目，主Agent与子Agent拥有一个共享缓存前缀[7][8]，其为当前系统版本下，必要的代码与意图映射汇总，与必要的系统状态。当一个任务被委派时，主Agent负责与用户对齐需求，并对任务进行拆分，任务的拆分的具体原则以降低耦合度与提高子任务目标的内聚性为主，且对任务的规模进行控制，确保其上下文占用对齐模型能力甜点区间。
 
 
 
-然后，其将为每个子Agent创建一个分支，具体而言：maintain environment, fork code, then build context as a seed。**每轮都要走一遍分叉、定契约与准备合并，这笔开销与任务多长无关。**每个子Agent的工作会作用于分支的虚拟文件上，以提交记录的形式落盘。
+然后，其将为每个子Agent创建一个分支，具体而言：maintain environment, fork code, then build context as a seed。**每轮都要走一遍分叉、定契约与准备合并，这笔开销与任务多长无关**[9]。每个子Agent的工作会作用于分支的虚拟文件上，以提交记录的形式落盘。
 
 
 
-任务解耦完毕后，主agent将会运用其对于代码整体的理解，为每个子Agent委派上下文中预置的文件内容，然后由Harness进行最大前缀组装。且主Agent会制定断言与测试作为合并前必要验收标准。
+任务解耦完毕后，主agent将会运用其对于代码整体的理解，为每个子Agent委派上下文中预置的文件内容，然后由Harness进行最大前缀组装[42]。且主Agent会制定断言与测试作为合并前必要验收标准。
 
 
 
@@ -114,25 +114,25 @@
 
 
 
-全部子Agent回归后，由主Agent/委派Agent进行代码合并，取长补短，并进行最终测试与汇报，并同时会对系统状态、代码映射等进行**坐标申报**——写下"东西在哪里"，由 Harness 按坐标把原文装配成新的前缀。（这一步是**写地址**，不是**重写正文**：写地址短，重写正文长，两者的价钱差一个量级，附录1 会算这笔账。）这个新的前缀将会成为下一次执行时候的公共前缀，其作为全局理解对于之后的主Agent任务委派与子Agent的全局观起到指导作用，是衔尾蛇循环重启自己生命历程的步骤。
+全部子Agent回归后，由主Agent/委派Agent进行代码合并，取长补短，并进行最终测试与汇报，并同时会对系统状态、代码映射等进行**坐标申报**——写下"东西在哪里"，由 Harness 按坐标把原文装配成新的前缀[10]。（这一步是**写地址**，不是**重写正文**：写地址短，重写正文长，两者的价钱差一个量级，附录1 会算这笔账。）这个新的前缀将会成为下一次执行时候的公共前缀，其作为全局理解对于之后的主Agent任务委派与子Agent的全局观起到指导作用，是衔尾蛇循环重启自己生命历程的步骤。
 
 
 
-综上为我为上下文原生智能（Context-Native Agent）设计的一种Git Base的基础架构。其具有理解/执行模型解耦，过程透明可理解，并行效率高，各个Agent可复用现有单流程Agent上下文管理成熟经验，前缀缓存利用率高，且规避了上下文长度瓶颈，更是从信息熵/上下文长度两方面确保了模型能力发挥稳定。
+综上为我为上下文原生智能（Context-Native Agent）设计的一种Git Base的基础架构。其具有理解/执行模型解耦，过程透明可理解，并行效率高，各个Agent可复用现有单流程Agent上下文管理成熟经验，前缀缓存利用率高[11][12]，且规避了上下文长度瓶颈，更是从信息熵/上下文长度两方面确保了模型能力发挥稳定。
 
 
 
 具体来说其相对主流，定性可能具有的优势：
 
-- 在上下文层面：每个子Agent只会被给定极其干净的 [ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]，作为其生长出果实的“种子”。这样干净的上下文有助于模型立刻进行工作，减少读取的工具调用次数和探索信息的不可控，但因为只是种子，也保留了发挥空间与一定的不可控风险。在具体的工程实现上，如果Raw Files Assigned段太长，则考虑仅先放入公共前缀部分，后续内容通过一个特定工具按需取用。
+- 在上下文层面：每个子Agent只会被给定极其干净的 [ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]，作为其生长出果实的“种子”。这样干净的上下文有助于模型立刻进行工作，减少读取的工具调用次数和探索信息的不可控，但因为只是种子，也保留了发挥空间与一定的不可控风险。在具体的工程实现上，如果Raw Files Assigned段太长，则考虑仅先放入公共前缀部分，后续内容通过一个特定工具按需取用[10]。
 
-- 在缓存利用层面：每个子Agent共享大量共同头，甚至Raw Files之前的内容可以与主Agent共享缓存前缀，等价于将所有只需要探索一次的内容的复利控制在了每个子Agent分区中，上下文累计只以子Agent结出的果实的形式回归主干，被吸收利用。这种共享有个前提：**装配时段序稳定**——前缀为了信息密度每轮整体重写，但段序一动不动，变动的只落在尾部，没变的部分逐字节相同。而分支那份上下文本身并不回归，它随分支一起消失，**消失的只是"曾经构建在上下文里"，不是内容**。而根据Git与软件工程的成熟经验，一次合并就意味着项目意图/功能结构的变更，此时主Agent上下文也是时候进行更新与重启了，最终做到每个目标实现时，上下文长度几乎不触及压缩阈值，每次变更只进行一次干净彻底的探索，不带着压缩后信息密度高却丢失细节的信息包袱。
+- 在缓存利用层面：每个子Agent共享大量共同头，甚至Raw Files之前的内容可以与主Agent共享缓存前缀，等价于将所有只需要探索一次的内容的复利控制在了每个子Agent分区中，上下文累计只以子Agent结出的果实的形式回归主干，被吸收利用。这种共享有个前提：**装配时段序稳定**[13]——前缀为了信息密度每轮整体重写，但段序一动不动，变动的只落在尾部，没变的部分逐字节相同。而分支那份上下文本身并不回归，它随分支一起消失，**消失的只是"曾经构建在上下文里"，不是内容**。而根据Git与软件工程的成熟经验，一次合并就意味着项目意图/功能结构的变更，此时主Agent上下文也是时候进行更新与重启了，最终做到每个目标实现时，上下文长度几乎不触及压缩阈值，每次变更只进行一次干净彻底的探索，不带着压缩后信息密度高却丢失细节的信息包袱。
 
 - 在透明度层面：主次分明，探索思考，需求对齐与实际落地解耦，交互均有signal可查，代码，架构与功能变更清晰可确认。
 
 - 在模型适配性层面：可对齐每个模型所需求的最优上下文形状。
 
-- 在模型能力层面：主要收益来自于信息熵的降低与上下文长度可控，中段迷失和能力下降被有效控制。
+- 在模型能力层面：主要收益来自于信息熵的降低与上下文长度可控，中段迷失和能力下降被有效控制[14][38]。
   
   
 
@@ -140,7 +140,7 @@
 
 
 
-而对于我们这套Git架构，越是随着任务的规模增大与目的的实现无关，就越可以被细化为边界清晰、数量可控、架构解耦的落地分支，并由主Agent一次生成一份稳定的、共享的、能回答"这个功能会落在哪些结构上"的项目意图映射与清晰边界的架构契约。最终规避并行写者N²的冲突，因为那是在任务高度耦合的具体实现目标下的不理想情况。当然，具体方面的优化打磨，不易解耦的任务，我们的架构能以付出轻微额外成本为代价，即可轻松回退到主Agent/少分支结构上。
+而对于我们这套Git架构，越是随着任务的规模增大与目的的实现无关，就越可以被细化为边界清晰、数量可控、架构解耦的落地分支，并由主Agent一次生成一份稳定的、共享的、能回答"这个功能会落在哪些结构上"的项目意图映射与清晰边界的架构契约。最终规避并行写者N²的冲突[15][16]，因为那是在任务高度耦合的具体实现目标下的不理想情况。当然，具体方面的优化打磨，不易解耦的任务，我们的架构能以付出轻微额外成本为代价，即可轻松回退到主Agent/少分支结构上。
 
 
 
@@ -148,7 +148,7 @@
 
 
 
-而在更加遥远的未来，当大模型的输出速度成为瓶颈的时候，缓存架构的优秀是否也意味着，首Token和平均Token都能大大提高？具有实际生产价值的模型规模上限得到扩充？不过这些都是当前架构成为主流顺带来的好处罢了，总之，它意在扭转还没有回头的迟滞当下，是面向未来以工程复杂度换取落地价值的优秀架构。现在的大模型架构革新，以收敛难度与炸炉风险换取能力上限，而Harness架构的革新成本与风险，可是要小得多，难道不值得探索吗？
+而在更加遥远的未来，当大模型的输出速度成为瓶颈的时候，缓存架构的优秀是否也意味着，首Token和平均Token都能大大提高[17][18]？具有实际生产价值的模型规模上限得到扩充？不过这些都是当前架构成为主流顺带来的好处罢了，总之，它意在扭转还没有回头的迟滞当下，是面向未来以工程复杂度换取落地价值的优秀架构。现在的大模型架构革新，以收敛难度与炸炉风险换取能力上限，而Harness架构的革新成本与风险，可是要小得多，难道不值得探索吗？
 
 
 
@@ -184,7 +184,7 @@ Context成为一等公民，意味着我们在文件治理，项目管理，操�
 
 #### A1.0 计费模型与符号
 
-**三档价格。** 全文按 **DeepSeek V4.1 Flash 低谷时段**计价：
+**三档价格。** 全文按 **DeepSeek V4.1 Flash 低谷时段**计价[19][20]：
 
 | 计费项 | 单价 | 什么时候按这一档计 |
 | --- | --- | --- |
@@ -196,7 +196,7 @@ Context成为一等公民，意味着我们在文件治理，项目管理，操�
 
 > **模型每写 1 个 token 的钱，等于把 200 个 token 背着走一步。**
 
-**这句话不是修辞，它被实测对上了。** 把三条实测会话合计 9,023 步按上面这张价格表重算：
+**这句话不是修辞，它被实测对上了。** 把三条实测会话合计 9,023 步按上面这张价格表重算[21]：
 
 | 钱花在哪 | token 量 | 花费 | 占比 |
 | --- | --- | --- | --- |
@@ -703,6 +703,196 @@ Deepseek V4 Pro-0813在实际发布后饱受诟病，其被质疑为刷分模型
 
 
 答案就在于Context作为与模型直接交互的中间层。现在的通用Harness在API层实现对模型的解耦，因此其不能对齐模型的训练数据与偏好环境。真正行之有效的适配方式，是在上下文组装环境为每个模型进行分野。不同的工具调用对于模型的形状各不相同，对应着模型的原生“肢体”。这样的一套通用Agent架构，才能实现对于同一模型，同一发挥下的“可比性”。
+
+
+
+
+### 附录3：引用、外部证据与对照
+
+#### A3.0 标记约定
+
+正文与附录1 里的方括号编号（形如 `[7]`）指向本节 A3.1 的条目；编号只为这类标记服务，不改变任何原有文字。
+
+每个条目都带一个核验层级，全文只用三档：
+
+| 标记 | 含义 |
+| --- | --- |
+| 【原文】 | 原始页面、论文摘要或官方公告我直接读到，引文逐字可查 |
+| 【转述】 | 原始页面不可访问，经镜像、索引或第三方转述核实；数字方向可信，精度待复核 |
+| 【未证实】 | 只有标题或转述，正文未核到——**本文不引，仅列在 A3.6** |
+
+#### A3.1 条目
+
+**[1]** Chroma（Hong, Troynikov, Huber），*Context Rot: How Increasing Input Tokens Impacts LLM Performance*，2025-07-14。https://www.trychroma.com/research/context-rot 【原文】
+
+**[2]** NVIDIA（Hsieh 等），*RULER: What's the Real Context Size of Your Long-Context Language Models?*，COLM 2024，arXiv:2404.06654 【转述】
+
+**[3]** Kuratov 等，*BABILong*，NeurIPS 2024，arXiv:2406.10149 【转述】
+
+**[4]** 界面新闻（铑科技），《黄仁勋押注，DeepSeek内测，详解Harness到底是什么？》，2026-08-03。https://www.jiemian.com/article/14868365.html 【原文】
+
+**[5]** Zhuang 等，*AgentRewind: Recoverable Execution for Long-Horizon LLM Agents*，arXiv:2608.14380，2026-08 【转述】
+
+**[6]** OpenHands / All Hands AI，*Context Condenser* 文档。https://docs.openhands.dev/sdk/guides/context-condenser 【转述】
+
+**[7]** Anthropic，*How Claude Code uses prompt caching*（官方文档）。https://code.claude.com/docs/en/prompt-caching 【转述】
+
+**[8]** Preble 等，关于"prompt 之间共享 token 比例"的测量，ICLR 2025，arXiv:2407.00023 【转述】
+
+**[9]** Anthropic，Claude Code 官方文档 *Create custom subagents*、*Worktrees*、*Agent teams* 【转述】
+
+**[10]** Anthropic（Rajasekaran, Dixon, Ryan, Hadfield 等），*Effective context engineering for AI agents*，2025-09-29。https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents 【原文】
+
+**[11]** LMSYS / SGLang HiCache，前缀缓存命中率实测（Claude Code traces over SWE-bench），2026。https://www.lmsys.org/blog/2026-06-27-netpreme-xmem 【转述】
+
+**[12]** vLLM × AgentX，生产轨迹统计（2026-09-08）。https://vllm.ai/blog/2026-09-08-vllm-agentx 【转述】
+
+**[13]** Red Hat AI Americas，vLLM v0.19.0 KV 缓存验证（字节稳定性与命中率）。https://github.com/redhat-ai-americas/memory-hub 【转述】
+
+**[14]** Liu 等，*Lost in the Middle: How Language Models Use Long Contexts*，TACL 12:157–173，2024 【转述】
+
+**[15]** Cognition（Walden Yan），*Don't Build Multi-Agents*，2025-06-12。https://cognition.com/blog/dont-build-multi-agents 【原文】
+
+**[16]** Kim 等，*Towards a Science of Scaling Agent Systems*，arXiv:2512.08296，2025-12 【转述】
+
+**[17]** Splitwise（Patel 等），ISCA 2024，arXiv:2311.18677 【转述】
+
+**[18]** Mooncake（Moonshot AI / 清华），FAST 2025 最佳论文，arXiv:2407.00079 【转述】
+
+**[19]** DeepSeek，*Models & Pricing*（官方定价页）。https://api-docs.deepseek.com/quick_start/pricing 【原文】
+
+**[20]** DeepSeek，*DeepSeek-V4.1-Flash: Smarter, Faster, More Efficient*（发布公告），2026-09-10。https://api-docs.deepseek.com/news/news260910 【转述】
+
+**[21]** Bai, Huang, Wang, Sun, Mihalcea, Brynjolfsson, Pentland, Pei，*How Do AI Agents Spend Your Money? Analyzing and Predicting Token Consumption in Agentic Coding Tasks*，arXiv:2604.22750，2026 【转述】
+
+**[22]** Manus，*Context Engineering for AI Agents: Lessons from Building Manus*，2025-07-18。https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus 【转述】
+
+**[23]** Microsoft Learn / Azure OpenAI Foundry，*Prompt caching*（更新至 2026-08-11）。https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/prompt-caching 【转述】
+
+**[24]** Lindenbauer 等（JetBrains Research / TUM），*The Complexity Trap: Simple Observation Masking Is as Efficient as LLM Summarization for Agent Context Management*，NeurIPS 2025 DL4Code workshop，arXiv:2508.21433 【转述】
+
+**[25]** Cursor（Cassano, Rush），*Training Composer for longer horizons*（自摘要），2026-03-17。https://cursor.com/blog/self-summarization 【转述】
+
+**[26]** Cognition（Walden Yan），*Multi-Agents: What's Actually Working*，2026-04-22。https://cognition.com/blog/multi-agents-working 【原文】
+
+**[27]** Augment Code，*AI Coding Cost Analysis: Where Token Spend Really Goes in an Agent Loop*，2026-07-24 【转述】
+
+**[28]** *Governance Decay*：压缩静默抹除治理约束的测量，arXiv:2606.22528 【转述】
+
+**[29]** ProjectDiscovery，*How We Cut LLM Costs by 59% With Prompt Caching*，2026-04-10。https://projectdiscovery.io/blog/how-we-cut-llm-cost-with-prompt-caching 【转述】
+
+**[30]** Zhang 等（Stanford / SambaNova / UC Berkeley），*Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models*（ACE），ICLR 2026，arXiv:2510.04618 【原文】（摘要）
+
+**[31]** Ehrlich, Blackman，*LCM: Lossless Context Management*，arXiv:2605.04050，2026-02-14 【原文】（摘要）
+
+**[32]** Conner，*pi-fold: Agent-Governed Lossless Context Folding*，Zenodo，2026-08-09，DOI 10.5281/zenodo.21856874 【原文】
+
+**[33]** Packer 等，*MemGPT: Towards LLMs as Operating Systems*，arXiv:2310.08560，2023 【转述】
+
+**[34]** Hsu, Lu，*Scoped Verification for Reliable Long-Horizon Agentic Context Evolution*（GRACE），arXiv:2607.09175，2026-07 【转述】
+
+**[35]** *Beyond Compaction: Structured Context Eviction for Long-Horizon Agents*，arXiv:2606.11213，2026 【转述】
+
+**[36]** Kongmen，*Pull: Lazy Materialization of Working Memory for Stateful LLM Conversations*，Zenodo，2026，DOI 10.5281/zenodo.21984705 【转述】
+
+**[37]** Li, Li, Zhang, Mei, Bendersky（Google），*Retrieval Augmented Generation or Long-Context LLMs?*，EMNLP 2024 Industry Track 【转述】
+
+**[38]** Laban, Hayashi, Zhou, Neville（Microsoft），*LLMs Get Lost In Multi-Turn Conversation*，ICLR 2026，arXiv:2505.06120 【转述】
+
+**[39]** Cursor（Wilson Lin），*Scaling long-running autonomous coding*，2026-01-14 【转述】
+
+**[40]** Anthropic（Nicholas Carlini），*Building a C compiler with a team of parallel Claudes*，2026-02-05 【转述】
+
+**[41]** KVFlow / KVCOMM，多智能体工作流的前缀复用测量，NeurIPS 2025 【转述】
+
+**[42]** Anthropic（Hadfield 等），*How we built our multi-agent research system*，2025-06-13。https://www.anthropic.com/engineering/multi-agent-research-system 【原文】
+
+**[43]** akitaonrails，*llm-coding-benchmark*，手动编排对照报告。https://github.com/akitaonrails/llm-coding-benchmark 【原文】
+
+**[44]** Google Gemini API 定价（显式上下文缓存的按小时存储计费），经第三方整理核实 【转述】
+
+#### A3.2 主张与外部证据
+
+| 本文主张 | 外部证据 | 关系 |
+| --- | --- | --- |
+| 上下文越长，判断越不可靠 | Chroma[1]：18 个模型，只变长度不变难度；同一批问题给 focused（约 300 token，只给相关部分）与 full（约 113k token）两版，focused 一致更好；且结构性连贯的 haystack 反而更差 | 支撑，是"少背就是能力"最直接的一手实验 |
+| 衰减跟的是**绝对 token 量**，不是窗口百分比 | RULER[2]：有效上下文为标称窗口的 16–50%，只有约一半模型在 32K 上保住质量；BABILong[3]：推理任务上"只有效利用 10–20%" | 支撑，并**修正口径**：所谓"20–30%"是夹在两条实测带之间的经验值 |
+| 背着是账单最大的一笔 | Bai et al.[21]（8 个前沿模型 × 500 个 SWE-bench-Verified 任务）："Despite output tokens being priced ~80× higher per token, **the sheer volume of accumulated context makes cheap-per-token cache reads the largest cost contributor** in aggregate"；DeepSeek 发布公告[20]："**Cache-hit charges often account for a large share of agent costs**"；Manus[22]：平均输入输出比约 100:1 | 支撑，三源独立 |
+| 写比读贵得多 | Splitwise[17]：BLOOM-176B 上 1,500 个输入 token 的 prefill 与 **6 个**输出 token 的 decode 耗时相同；Anthropic 与 OpenAI 对缓存**写入**收 1.25×–2×[23] | 支撑，且**论证的落点应是硬件比**，不是价格比 |
+| 高命中率是常态 | LMSYS[11] 平均约 **98%**；vLLM × AgentX[12] 每轮中位输入 **142K**、命中 >96%；Red Hat[13] 字节稳定前缀 **98.29%**；Preble[8] **85–97% 的 prompt token 与他请求共享**；ProjectDiscovery[29] 在 26 步的生产 agent 上把命中率从 7% 提到 **84%**、成本降 **59%** | 支撑，五条独立来源包住本文实测的 98.6–99.7% |
+| 子代理只把果实交回主干 | Anthropic[10]："returns only a condensed, distilled summary of its work (often **1,000-2,000 tokens**)"；Claude Code[9] 示例："The subagent read **6,100** tokens of files. You got a **420**-token result"；Cursor[25] 自摘要约 **1,000** token 对基线 >5,000，且"reduces the error from compaction by **50%**" | 支撑，且与本文实测"每步写 1,043 token"同量级 |
+| 边界的价值大于执行者本身 | akitaonrails[43]：同一批执行者在强规划者给定边界后，46→**93**、71→**94**、87→**97**；审计归因"执行者写了每一行，但**规划者决定了边界**" | 支撑 |
+| 上下文不该累积 | AgentRewind[5]：从头重来 **78.0%** > 继续推进 62.2%；OpenHands[6] 的架构是"**append-only event log**"，递给模型的是由 `View` 派生的视图 | 支撑：状态与提示词是两件事，提示词是派生视图 |
+| 回滚需要三件套 | AgentRewind[5] 消融：**只回滚上下文 43.9%——比什么都不做（62.2%）还差**；只回滚环境 51.2%；三者齐备 87.8% | 支撑本文"分支 + 环境 + 信号回流"缺一不可 |
+| 机械操作能打平模型判断 | Complexity Trap[24]：观察遮罩与 LLM 摘要能力打平、省约一半成本；Beyond Compaction[35]：无 LLM 的确定性驱逐，89 任务 / 8,000 万 token 无可见退化；Pull[36]：本地确定性清理零 LLM 调用、省 75.1% token，ΔF1 不显著 | 支撑原则；**序言记录过更早的一手经验**（工具剪切中间层，实测收益极低后搁置） |
+| 压缩有账外代价 | Augment[27]：每步 token −75%，但**解完所需轮数 4→14**，总量只 −14%；Governance Decay[28]：压缩后治理约束被静默抹掉，7 个模型家族违规率 **0%→30%**，个别到 59% | 支撑，是"压缩税"之外的第二种压缩代价 |
+| 长会话里"累积"本身在退化 | Laban et al.[38]：多轮对话相比单轮平均掉 **39%**，且"wrong turn 之后不会自己走回来" | 支撑重建与回滚 |
+| 边界的价值独立于上下文长度 | Cognition[26]：代码审查代理在**与写作者完全不共享上下文**时效果最好，归因是 attention 的数学 | 支撑上下文隔离 |
+
+#### A3.3 已经发生过的坑，与本文对应的设计区分点
+
+**这一栏不是反驳清单，而是"已经有系统在这里摔倒过"，以及本文在哪一步做了不同的选择。**
+
+| 已经发生过的坑 | 谁遇到的 | 本文对应的区分点 |
+| --- | --- | --- |
+| 子代理有自己的系统提示与工具集，**打不到父会话的缓存**；只有精确继承的 fork 才行 | Claude Code 官方文档[7][9] | 种子必须是**共享前缀的严格延伸**：公共部分逐字节同一，分支差异只能落在前缀之后（正文 129） |
+| 缓存按机器与目录分家，**同一仓库的不同 worktree 互相打不到** | Claude Code 官方文档[7] | 环境隔离与前缀解耦：**环境标识绝不进前缀** |
+| 在一个命中 98.29% 的前缀后追加 **41 个字符**，命中率塌到 **1.78%**，官方口径是"Effectively a complete miss" | Red Hat[13] | 完全前缀组装 + 段序稳定（正文 129；附录1 A1.7 的 ΔP） |
+| **工具列表的顺序也是缓存身份**，MCP 列表一变动命中率 71%→33% | 社区实测（permafrost 项目，小样本） | 前缀内不放任何会漂移的字节 |
+| 并发写者互相覆盖；20 个并行 agent 塌缩成 2–3 个的吞吐，最后把 integrator 角色删掉 | Anthropic C 编译器[40]、Cursor[39] | 各写各的虚拟文件 + 事前契约 + **单写者合并**（正文 105/143） |
+| 独立代理把错误放大 **17.2 倍**，集中式只有 4.4 倍；顺序推理任务上多代理退化 39–70% | Kim et al.[16] | 本文不是"独立代理投票"：主 Agent 定契约与断言、单写者合并——**正落在该文的正结果一侧（集中式协调）** |
+| 多智能体比对话贵 **15 倍**[42]，agent teams 约 **7 倍**[9] | Anthropic 自己的数字 | 那 15× 来自**每个子代理各背一份上下文**；共享前缀 + 按需取用打的正是这一点 |
+| 让模型重写自己上一轮写的正文，会"context collapse"、越写越薄 | ACE[30]；GRACE[34] 的对照里，结构化、限定范围的更新 pass^3 = **0.673**，而平铺式整体重写只有 **0.191** | 本文不重写正文：Harness 按坐标**重装原文**——内容上是增量、装配上是重取 |
+| 压缩会**主动作废**整层缓存（官方口径："invalidates the conversation layer"） | Claude Code 官方文档[7] | 重建 ≠ 重排：段序稳定时前缀照旧命中 |
+| 预算充足时，长上下文一致优于检索增强 | Li et al.[37] | 与 Chroma[1] 的 focused/full 结论方向相反，两文条件不同、互相抵消；本文的主张不是"小上下文更强"，而是"**在必须站低水位的前提下不必因此丢内容**" |
+
+#### A3.4 至今没有人做过的对照
+
+**这比上一栏更要紧：它划出引用管不到、只能靠实验回答的部分。**
+
+**一、把"机械 vs 模型"控制住之后，再比"累积 vs 重建"。** 现有文献里，机械清除[24]与重建架构从未在同一条件下同台。对照应当是四臂，**且 B 与 C′ 必须使用同一种现成的机械手段**，否则又是拿"有"比"没有"：
+
+| 臂 | 内容 | 它单独回答什么 |
+| --- | --- | --- |
+| A | 累积 + LLM 压缩 | 现行默认 |
+| B | 累积 + **厂商级现成的机械清除** | 机械能否打平模型判断 |
+| C | 每轮从环境重建 + 共享前缀 | |
+| **C′** | 每轮从环境重建 + 共享前缀 **+ 同一种机械清除** | 本文的完整形态 |
+
+**A 对 B 切出来的是本文与别人共享的那部分原则；B 对 C′ 切出来的才是本文自己的增量**——这两臂机械手段完全相同，唯一剩下的变量是"上下文是累积的还是每轮重建的"。
+
+**二、"压缩税"没有任何直接测量。** 三个方向找下来，没有任何来源把"模型写摘要"这一笔单独计成账；最接近的净额数据是 Augment 的"每步 −75%、总量 −14%"[27]。所以本文把它算成一张账单，**是本文自己的贡献**，引用只能提供方向性支撑，不能提供数值背书。
+
+**三、"前缀更准 ⇒ 更少工具调用"这条因果没有任何论文测过。** 附录1 A1.6 第 5 条把它写成设计意图是对的；但它至今是**待测**项。
+
+**四、"N² 写冲突"是本文的用词。** 冲突现象被反复观察到（A3.3），但没有文献这样命名或量化它。
+
+#### A3.5 口径与适用范围（对附录1 的补充说明）
+
+| 项 | 附录1 的说法 | 适用范围 |
+| --- | --- | --- |
+| 三档价格 ¥0.02 / ¥1 / ¥4[19] | 按 DeepSeek 计价 | 这是 **DeepSeek-V4.1-Flash 空闲时段**的官方价；**高峰为 2 倍**；取低谷价是保守取法 |
+| 未命中是命中的 50 倍、输出是命中的 200 倍 | 两个比值决定整笔账的形状 | 该比值**只对 Flash 成立**：Pro 是 30×/90×；Anthropic 与 OpenAI 的缓存读为输入价的 0.1×（10×）[23]；Bai et al. 的价格表约为 80×[21]。**不能讲成 prompt caching 的普遍性质** |
+| 背着 38.5% / 首读 21.7% / 写 39.8% | 三条实测会话的账单构成 | 这是在 **DeepSeek 价目 + 长会话稳定前缀**这一工作量上测得的。换到 Anthropic 文档里的 agent 会话，按其用量重算约为**背着 51.0% / 缓存写入 33.9% / 输出 14.4%**[23]——**换价目只会让"背着"占比更高**。所以它是工作量形状，不是 agent 的普遍形状 |
+| "背着的便宜被体积抵消" | 背着单价极低但数量巨大 | 更准确：**价格上便宜，资源上不便宜**。按公开的 KV 尺寸，1M token 的缓存在 Llama-3-8B 一类模型上约 122 GB；而 DeepSeek 的命中价约 $0.0028/M[19]。命中价是**算力价（省掉的 prefill）**，不是存储价。Google 对显式缓存**按小时收存储费**[44]，这一项已经在被计价 |
+| 一次重置的未命中"只付一次，不按分支数付" | 本架构重置成本的构成 | 前提比原句更严：缓存要求**完整前缀单元匹配**且为 best-effort；分叉点必须落在同一个已存单元边界上。这不是风险提示，而是**设计纪律**——正文 129 的"段序稳定"与"公共部分逐字节相同"正是为它写的 |
+| 三条会话遥测（9,023 步 / 203,660 token 每步 / 98.6–99.7% 命中） | 参数全部来自实测 | 这是**本文自己的一手遥测**，外部无法复核。其中 203,660 token/步 属于"长会话 + 工具密集 + 含子代理"的区间（vLLM × AgentX 的生产中位是每轮输入 142K[12]），**不是编码 agent 的普遍水平**；98.6–99.7% 的命中率则有四条独立来源包住（A3.2） |
+| "人在 30% 上下停手" | 九次人工压缩的中位 30.9% | 这是**本文自己的观察**，不是行业规范；公开默认值要激进得多（Claude Code 的自动压缩在窗口的 83.5% 上下触发）[7] |
+| 无损可回取 | 分区优于压缩 | 这一层**已有先行工作**：LCM[31] 的"保留指向每一份原文的无损指针"、pi-fold[32] 的哈希寻址与逐字节取回、MemGPT[33] 的虚拟上下文分页。本文的区别不在"无损"本身，而在**信源**：它们的指针指回**对话历史**，本文的坐标指回**环境** |
+
+#### A3.6 未采信与不可用清单
+
+写下这一栏，是为了让读者知道本文的证据边界在哪里。
+
+- **不引用**：CompactionRL（arXiv:2607.05378）与 Recursive Language Models（arXiv:2512.24601）——只有标题或转述，正文未能核到。
+- **不引二手数字**：ACE 的"18,282 → 122 token"collapse 数字来自第三方笔记而非论文正文，本文只引其摘要原话[30]。
+- **美元数字不可重算的不引美元**：Bun 的 Zig→Rust 迁移报告约 $165,000，无法用任何公开价目重算到该数，只在 A3.5 的口径讨论中取其 token 形状。
+- **降级使用**：Anthropic 与 OpenAI 的倍率来自 Microsoft Learn（对 OpenAI 机制属一手）与镜像仓库，不是厂商实时页面；MAST 的分类百分比、RULER/BABILong/NoLiMa 的具体数字、Kim et al. 与 AgentRewind 的消融百分比，均为【转述】。
+- **同行评审比例**：本节已引用并经同行评审的有 Lost in the Middle（TACL 2024）[14]、RULER（COLM 2024）[2]、Complexity Trap（NeurIPS 2025 workshop）[24]、KVFlow/KVCOMM（NeurIPS 2025）[41]、Li et al.（EMNLP 2024）[37]、Laban et al.（ICLR 2026）[38]、Prompt Cache（MLSys 2024）、SGLang（NeurIPS 2024）、Preble（ICLR 2025）[8]、Mooncake（FAST 2025）[18]、Generative Agents（UIST 2023）、Reflexion（NeurIPS 2023）、Splitwise（ISCA 2024）[17]、ACE（ICLR 2026）[30]。**其余为预印本、厂商文档或行业博客**，本节不把它们当作已确立的结论使用。
+
+#### A3.7 一句话
+
+> **本文的价格模型与"背着是账单最大的一笔"有官方口径、独立研究与厂商原话三重支撑；"无损可回取"这一层已有先行工作，本文的区别在信源是环境而不是对话历史；而本文真正的成本主张——压缩税——至今没有被任何人直接测量过，所以它是本文自己的账，不是引文的结论。把"机械 vs 模型"与"累积 vs 重建"分开的那张四臂对照，也还没有人做过。**
 
 
 
