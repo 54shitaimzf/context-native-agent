@@ -410,8 +410,12 @@ body.light .toolbar{margin:18px 0 30px}
   p{orphans:2;widows:2}
   .tw{overflow:visible}
   thead th{position:static}
-  tr,.callout,.fig,table{break-inside:avoid;page-break-inside:avoid}
-  .fig,table{break-inside:avoid}
+  /* 表格允许跨页。整表不拆的代价实测很大：A3.2 / A3.4 / A3.6 三张表会被整张推到下一页，
+     分别留出 67 / 95 / 154 mm 的空白。行仍然不拆，表头设成 table-header-group，跨页时每页重印。 */
+  tr,.callout,.fig{break-inside:avoid;page-break-inside:avoid}
+  table{break-inside:auto;page-break-inside:auto}
+  thead{display:table-header-group}
+  .fig{break-inside:avoid}
   a{color:var(--ink);text-decoration:none}
   a.cite{color:#33556f}
   .mnote{position:static;display:block;width:auto;top:auto;right:auto;text-align:right;font-size:8pt;line-height:1.45;
