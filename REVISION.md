@@ -7,7 +7,7 @@
 | 文件 | 说明 |
 | --- | --- |
 | `Agent架构革新：迈向上下文原生智能-Context-Native Agent.md` | 定稿源文件（序言 / 正文 / 附录1 Harness 耦合思考 / 附录2 半定量成本分析 / 附录3 引用与对照） |
-| `Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf` | **最终格式**：A4、**36 页**、154 个可点击链接（目录 29 + 角标 82 + 回链 40 + 页边注 3），带页码的目录与页脚页码 |
+| `Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf` | **最终格式**：A4、**35 页**、154 个可点击链接（目录 29 + 角标 82 + 回链 40 + 页边注 3），带页码的目录与页脚页码 |
 | `Agent架构革新：迈向上下文原生智能-Context-Native Agent.html` | 自包含单文件阅读版：KaTeX 与字体全部内联，离线可用。顶部两个开关——「强调·专名·边注」与「白底（PDF 预览）」 |
 | `build-html.mjs` | 渲染脚本：`node build-html.mjs` 从 Markdown 重建 HTML（只读 Markdown，不改它） |
 | `build-pdf.mjs` | 导出与自查：`node build-pdf.mjs` 导出 PDF；`final` 导出＋截图＋几何审计＋页边距探针；`tocpages` 用 pdftotext 反查目录页码；`shots 关键词…` 分页截图；`audit` 几何审计；`probe` 页边距探针；`notetest` 页边注排版变体测试；`fonttest` 字体嵌入诊断 |
@@ -74,7 +74,7 @@
 | 内部链接 | 109 个锚点目标，**悬空 0 个** |
 | 表格 | 26 块，**0 处列数不一致** |
 | 版式几何 | 溢出正文框 **0**、图内文字越界 **0**、表格横向溢出 **0** |
-| 成品量测 | `node measure-pdf.mjs`：正文文字横向 **21.6–173.8 mm**（设计值 22–172；右缘多出的 1.8mm 是中文标点悬挂）、页脚 **162.7–172 mm**、**36 页**、页边注 3 条均在（第 6、6、7 页） |
+| 成品量测 | `node measure-pdf.mjs`：正文文字横向 **21.6–173.8 mm**（设计值 22–172；右缘多出的 1.8mm 是中文标点悬挂）、页脚 **162.7–172 mm**、**35 页**、页边注 3 条均在（第 6、6、7 页） |
 | 标点 | ASCII 直引号 0、中文引号 201/201 平衡、ASCII 省略号 0 |
 | 字体嵌入 | `NotoSansSC-Regular / -SemiBold / -Bold`、`NotoSerifSC-Bold`、`SegoeUI`、`KaTeX`×2、`NSimSun`（个别符号兜底） |
 | 残留标记 | 占位符 0、正文可见的字面星号 0 |

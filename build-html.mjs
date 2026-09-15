@@ -72,9 +72,12 @@ function renderTable(rows) {
   const body = rows.slice(2).map(cells);
   const isRefTable = head[0] === '#' && head[3] === '核验'; // 只有 A3.1 那张条目表（首列 #、四列是 档/核验）
   const colCls = head.map(h => /本架构|共享前缀/.test(h) ? 'col-ours' : (/基线|累积/.test(h) ? 'col-base' : ''));
-  const isNum = (s, i) => i > 0 && /^[¥$]?\s?\d[\d,.]*\s?(k|M|%|倍|步|字|个|条|页|页)?$/.test(s.replace(/\*\*/g, ''));
+  const isNum = (s, i) => i > 0 && /^[¥$]?\s?\d[\d,.]*\s?(k|M|%|倍|步|字|个|条|页)?$/.test(s.replace(/\*\*/g, ''));
+  // 价格写法（如 ¥0.02 / M）强制不折行，否则窄列里会被折成两行
+  const isPrice = s => /^[¥$]\s?\d[\d.,]*\s*\/\s*[kM]$/.test(s.trim());
+  const cellCls = (c, i) => [colCls[i], isNum(c, i) ? 'numr' : '', isPrice(c) ? 'nw' : ''].filter(Boolean).join(' ');
   let h = `<div class="tw"><table${isRefTable ? ' class="reftable"' : ''}>`;
-  h += '<thead><tr>' + head.map((c, i) => `<th class="${(colCls[i] + ' ' + (isNum(c, i) ? 'numr' : '')).trim()}">${inline(c)}</th>`).join('') + '</tr></thead><tbody>';
+  h += '<thead><tr>' + head.map((c, i) => `<th class="${cellCls(c, i)}">${inline(c)}</th>`).join('') + '</tr></thead><tbody>';
   for (const r of body) {
     let trAttr = '', first = null;
     if (isRefTable) {
@@ -83,8 +86,7 @@ function renderTable(rows) {
     }
     h += `<tr${trAttr}>` + r.map((c, i) => {
       if (i === 0 && first) return `<td class="refno ${colCls[i]}"><a href="#cite-${first}-1">[${first}]</a></td>`;
-      const cls = (colCls[i] + ' ' + (isNum(c, i) ? 'numr' : '')).trim();
-      return `<td class="${cls}">${inline(c)}</td>`;
+      return `<td class="${cellCls(c, i)}">${inline(c)}</td>`;
     }).join('') + '</tr>';
   }
   return h + '</tbody></table></div>';
@@ -341,6 +343,7 @@ tbody tr:hover{background:var(--tint)}
 td.col-ours,th.col-ours{background:var(--tint)}
 td.col-base,th.col-base{background:none}
 td.numr,th.numr{text-align:right;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;white-space:nowrap}
+td.nw,th.nw{white-space:nowrap}
 table.reftable{table-layout:fixed;font-size:8.2pt;line-height:1.5}
 table.reftable td,table.reftable th{overflow-wrap:anywhere}
 table.reftable th:nth-child(1){width:7mm}
