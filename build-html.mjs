@@ -162,30 +162,15 @@ function chartLevels() { // 三种活法 + 本架构
 }
 function figure(svg, cap) { return `<figure class="fig">${svg}<figcaption>${cap}</figcaption></figure>`; }
 
-/* ---------------- 4.5 第 1 层阅读增强（只作用于渲染结果，Markdown 一字不动） ---------------- */
+/* ---------------- 4.5 第 1 层阅读增强（装置的形状由渲染层给，选哪句由作者在 Markdown 里加粗决定） ----------------
+   胶囊是一种装置、两种宽度：作者写 **重点**，≥12 字渲染成整句主张（宽胶囊），<12 字渲染成短语/术语（窄胶囊），
+   列表标号（推论1：…）保持纯加粗。强调因此不再靠渲染层里的一份字面量表——作者改一个字，胶囊会跟着走，不会静默失效。 */
 const LQ = String.fromCharCode(0x201c), RQ = String.fromCharCode(0x201d);
-// 强调：结论句 / 定义句 / 边界句（与作者原有的 **粗体** 在观感上分层）
-const EM = [
-  '模型的状态只取决于参数与上下文；Agent的状态取决于环境 + 上下文 + 模型',
-  '内容离开上下文，不再等于失去内容',
-  '成为Harness的一等公民',
-  `<strong>删除</strong>，不可逆；分区是<strong>不构建</strong>，可回取`,
-  `有没有可能，上下文是从一颗纯净、被构建的前缀${LQ}种子${RQ}中生长出来的？`,
-  '上下文压缩与剪切，是否还是正确的上下文处理方式呢？',
-  '最大前缀组装',
-  '更是从信息熵/上下文长度两方面确保了模型能力发挥稳定',
-  '有待实验验证',
-  'build上下文',
-  '并行写者N²的冲突',
-  '共享缓存前缀',
-];
+const CAP_MIN = 12;            // 12 字（含）以上算“一整句话”
+const CAP_LABEL = /^推论/;      // 推论1/2/3/3′ 是列表标号，不是主张
 const TERMS = [
   '[ Environmental View ] + [ Project Structure and Intention Mapping ] + [ Raw Files Assigned ]',
   `AI native ${LQ}Git tree${RQ}`,
-];
-const EQ = [
-  `${LQ}Agent = Harness + Model${RQ}`,
-  `<strong>${LQ}Agent = Environment + Context + Model${RQ}</strong>`,
 ];
 const GROUPS = [
   ['问题的由来', '所以，当我想到这一点的时候'],
@@ -200,30 +185,22 @@ const MNOTES = [
   ['在缓存利用层面', 'A3.4', '41 个字符的缓存崩塌'],
   ['而对于我们这套Git架构', 'A3.4', '同类踩坑：N² 写冲突'],
 ];
-const R = { em: 0, term: 0, eq: 0, note: 0, hits: [], cnt: new Map() };
+const R = { cap: 0, wide: 0, term: 0, note: 0, hits: [], cnt: new Map() };
 const bump = (type, t, n = 1) => { const k = type + '|' + t; R.cnt.set(k, (R.cnt.get(k) || 0) + n); };
 const plainOf = s => s.replace(/<[^>]+>/g, '');
 function enhance(html, plain, ln) {
   let h = html;
-  EQ.forEach(t => {
-    if (R.cnt.get('eq|' + t)) return; // 每个等式只在它首次出现处升格
-    if (h.includes(t)) {
-      bump('eq', t); R.eq++; R.hits.push(['等式', ln, plainOf(t)]);
-      h = h.split(t).join('<span class="eq">' + t.replace(/^<strong>|<\/strong>$/g, '') + '</span>');
-    }
-  });
   TERMS.forEach(t => {
     const n = h.split(t).length - 1;
     if (n) { bump('term', t, n); R.term += n; R.hits.push(['专名', ln, plainOf(t).slice(0, 26) + (n > 1 ? ' ×' + n : '')]); h = h.split(t).join('<span class="term">' + t + '</span>'); }
   });
-  EM.forEach(t => {
-    const n = h.split(t).length - 1;
-    if (n) {
-      bump('em', t, n); R.em += n;
-      const cls = plainOf(t).length <= 20 ? 'em' : 'em-plain';   // 短标记带淡底，长句只加粗
-      R.hits.push([cls === 'em' ? '强调·底' : '强调·粗', ln, plainOf(t).slice(0, 28) + (n > 1 ? ' ×' + n : '')]);
-      h = h.split(t).join('<span class="' + cls + '">' + t + '</span>');
-    }
+  // 胶囊：作者写在 Markdown 里的 **加粗** 就是强调，渲染层只决定这个胶囊有多宽
+  h = h.replace(/<strong>([^<]+)<\/strong>/g, (m, t) => {
+    if (CAP_LABEL.test(t)) return m;
+    const wide = t.length >= CAP_MIN;
+    R.cap++; if (wide) R.wide++;
+    R.hits.push([wide ? '主张·宽胶囊' : '标记·窄胶囊', ln, t.slice(0, 34) + (t.length > 34 ? '…' : '') + '（' + t.length + '字）']);
+    return '<span class="' + (wide ? 'claim' : 'em') + '">' + t + '</span>';
   });
   const mi = MNOTES.findIndex(m => plain.startsWith(m[0]));
   // 注记插在区块**末尾**：屏幕上是绝对定位（位置与源码顺序无关，仍与首行齐平），
@@ -310,14 +287,14 @@ const CSS = `
 /* ---- 设计变量：屏幕为暖白纸，打印为纯白；强调一律中性底色、不用彩色高亮 ---- */
 :root{
   --paper:#fbfaf7;--ink:#1b1b1b;--ink-soft:#3c3c3c;--muted:#7a756d;
-  --rule:#e0ddd5;--rule-ink:#2a2a2a;--tint:#f2f0ea;--tint-2:#e9e6de;
+  --rule:#e0ddd5;--rule-ink:#2a2a2a;--tint:#f2f0ea;--tint-2:#e6e1d5;
   --accent:#3f5f7f;--base:#c6c2b9;
   --sans:"Noto Sans SC","Source Han Sans SC","Microsoft YaHei",system-ui,sans-serif;
   --serif:"Noto Serif SC","Source Han Serif SC",Georgia,serif;
   --mono:"Cascadia Mono","Source Code Pro",ui-monospace,Consolas,monospace;
   --measure:150mm;--mo:-12.5em;--mw:11em;
 }
-@media (prefers-color-scheme:dark){:root{--paper:#15171a;--ink:#e8e6e1;--ink-soft:#cfccc6;--muted:#9aa0a6;--rule:#2e3238;--rule-ink:#d8d5cf;--tint:#23262b;--tint-2:#2b2f35;--accent:#8fb0d4;--base:#4a5158}}
+@media (prefers-color-scheme:dark){:root{--paper:#15171a;--ink:#e8e6e1;--ink-soft:#cfccc6;--muted:#9aa0a6;--rule:#2e3238;--rule-ink:#d8d5cf;--tint:#23262b;--tint-2:#30343a;--accent:#8fb0d4;--base:#4a5158}}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.85 var(--sans);text-spacing:normal;-webkit-font-smoothing:antialiased}
@@ -365,27 +342,29 @@ td.refno{white-space:nowrap;font-family:var(--mono);font-size:.9em;color:var(--m
 td.refno a{text-decoration:none;color:inherit}
 a.cite{color:var(--accent);text-decoration:none;font-size:.76em;vertical-align:super;padding:0 .3px}
 a.cite:hover{text-decoration:underline}
+/* 紧跟在胶囊后面的角标要拉开一点，否则上标的方括号会贴到胶囊右缘，看起来像被一起涂了底 */
+.claim + a.cite,.em + a.cite{margin-left:.16em}
 a.anchor{opacity:0;margin-left:.4em;color:var(--muted);text-decoration:none;font-size:.8em}
 h2:hover a.anchor,h3:hover a.anchor{opacity:1}
 .fig{margin:1.4em 0 1.7em;padding:6px 0 2px}
 .toolbar{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--muted);background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:7px 12px;margin:0 0 26px}
 .toolbar strong{color:var(--ink);font-weight:600}
 .toolbar label{cursor:pointer;color:var(--ink);display:flex;gap:6px;align-items:center}
-/* ---- 强调：Markdown 风范——加粗承担醒目；中性极淡底色只给短标记，整句只加粗，不抢注意力 ---- */
-.em{font-weight:700;background:var(--tint);border-radius:2px;padding:0 .16em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.em-plain{font-weight:700}
+/* ---- 强调（胶囊）：一种装置、两种宽度——窄胶囊给短语与术语，宽胶囊给整句主张；套色一律中性，不抢注意力 ----
+   两个内边距都是量出来的：①宽胶囊常整句落在行尾，左右内边距稍大就顶出版心（0.34em 时右溢 3px）；
+   ②竖直内边距每多一分，同一段里相邻两行的胶囊就靠近一分（0.1em 时只隔 3px，连读像给整段加了底），
+   所以宽胶囊竖直归零——底色带正好贴住字身框，相邻行之间留出约 2mm 白缝。 */
+.em{font-weight:700;background:var(--tint);border-radius:2px;padding:.02em .2em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.claim{font-weight:700;background:var(--tint-2);border-radius:2px;padding:0 .09em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .term{font-family:var(--mono);background:var(--tint);border-radius:3px;padding:.1em .34em;font-size:.87em}
-.eq{font-weight:700;background:var(--tint-2);border-radius:3px;padding:.1em .4em;letter-spacing:.01em;white-space:nowrap;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 /* ---- 页边注：屏幕上落在正文右侧留白、与所注段落首行齐平 ----
    注意：PDF 导出时会丢弃落在版心外的绝对定位元素，所以打印时改为紧贴该段落上方的一行灰色小注 ---- */
 .mnote{position:absolute;top:.42em;right:var(--mo);width:var(--mw);font-size:10.5px;line-height:1.5;color:var(--muted);text-decoration:none;text-align:left;border-top:1px solid var(--rule);padding-top:3px}
 .mnote .mn-t{display:block;font-weight:600;letter-spacing:.02em;color:var(--ink-soft)}
 .mnote:hover .mn-t{text-decoration:underline}
 p,li{position:relative}
-body.no-em .em{font-weight:inherit;background:none;padding:0}
-body.no-em .em-plain{font-weight:inherit}
+body.no-em .em,body.no-em .claim{font-weight:inherit;background:none;padding:0}
 body.no-em .term{font-family:inherit;background:none;padding:0;font-size:inherit}
-body.no-em .eq{font-weight:inherit;background:none;padding:0;white-space:normal}
 body.no-em .mnote{display:none}
 /* ---- 封面 / 目录：屏幕默认不显示，白底预览与打印时显示 ---- */
 .cover,.tocpage{display:none}
@@ -407,14 +386,14 @@ ol.toc-list .t2{font-weight:700;margin-top:3.2mm}
 ol.toc-list .t3{padding-left:6mm;color:var(--ink-soft);font-size:9pt}
 ol.toc-list .t4{padding-left:12mm;color:var(--muted);font-size:8.5pt;line-height:1.42}
 /* ---- 白底预览：与 PDF 观感一致 ---- */
-body.light{--paper:#fff;--ink:#111;--ink-soft:#333;--muted:#666;--rule:#dcd9d2;--rule-ink:#222;--tint:#f2efe9;--tint-2:#eae7df;--accent:#33556f;--base:#c6c2b9;--mo:-30mm;--mw:24mm;color-scheme:light}
+body.light{--paper:#fff;--ink:#111;--ink-soft:#333;--muted:#666;--rule:#dcd9d2;--rule-ink:#222;--tint:#f2efe9;--tint-2:#e6e1d5;--accent:#33556f;--base:#c6c2b9;--mo:-30mm;--mw:24mm;color-scheme:light}
 body.light .cover,body.light .tocpage{display:block}
 body.light main{max-width:var(--measure);padding-top:0}
 body.light .doc-title,body.light p.doc-author{display:none}
 body.light .toolbar{margin:18px 0 30px}
 @page{size:A4;margin:22mm 38mm 20mm 22mm}
 @media print{
-  :root,body.light{--paper:#fff;--ink:#111;--ink-soft:#333;--muted:#666;--rule:#dcd9d2;--rule-ink:#222;--tint:#f2efe9;--tint-2:#eae7df;--accent:#33556f;--base:#c6c2b9;--mo:-30mm;--mw:24mm;color-scheme:light}
+  :root,body.light{--paper:#fff;--ink:#111;--ink-soft:#333;--muted:#666;--rule:#dcd9d2;--rule-ink:#222;--tint:#f2efe9;--tint-2:#e6e1d5;--accent:#33556f;--base:#c6c2b9;--mo:-30mm;--mw:24mm;color-scheme:light}
   html,body{background:#fff !important;color:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body,main,p,li,td,th,h1,h2,h3,blockquote,figcaption,ol.toc-list,.cv-meta,.mnote{font-family:var(--sans) !important}
   .cv-title{font-family:var(--serif) !important}
@@ -440,8 +419,8 @@ body.light .toolbar{margin:18px 0 30px}
   .mnote .mn-t{display:inline;color:#6b6b6b;font-weight:600;letter-spacing:.02em}
   .mnote .mn-t::after{content:"　"}
   .em{background:#f2efe9}
-  .em-plain{background:none}
-  .term,.eq{background:#f2efe9}
+  .claim{background:#e6e1d5}
+  .term{background:#f2efe9}
   blockquote.callout{background:#f2efe9;border-left-color:#b9b4ac}
   figcaption{font-size:8.5pt;line-height:1.5}
   .fig svg{break-inside:avoid}
@@ -495,7 +474,7 @@ const TOCPAGE = `<section class="tocpage">
   }).join('')}</ol>
 </section>`;
 const FRONT = COVER + '\n' + TOCPAGE;
-const TOOLBAR = `<div class="toolbar"><strong>阅读增强</strong><label><input type="checkbox" id="em" checked> 强调 · 专名 · 边注</label><label><input type="checkbox" id="lt"> 白底（PDF 预览）</label><span>Markdown 源文件未改一字</span></div>`;
+const TOOLBAR = `<div class="toolbar"><strong>阅读增强</strong><label><input type="checkbox" id="em" checked> 胶囊 · 专名 · 边注</label><label><input type="checkbox" id="lt"> 白底（PDF 预览）</label><span>文字未改一字，强调取自 Markdown 的加粗</span></div>`;
 
 const html = `<!doctype html>
 <html lang="zh-CN"><head>
@@ -516,7 +495,7 @@ ${FRONT}
 ${body}
 <footer>
   <span class="cl">版式说明</span>
-  单文件离线版 · 由 <code>build-html.mjs</code> 从 Markdown 定稿渲染（文字逐字一致，仅渲染层加图与颜色）<br>
+  单文件离线版 · 由 <code>build-html.mjs</code> 从 Markdown 定稿渲染（文字逐字一致；胶囊、图与页边注由渲染层生成）<br>
   版本：<code>${hash}</code> · 生成于 ${today}
 </footer>
 </main>
@@ -546,9 +525,9 @@ console.log('  体积 %s KB（其中 KaTeX CSS %s KB / JS %s KB）', (html.lengt
 console.log('  自检：残留占位符 %d，残留 url(fonts/ %d，svg %d 个，表格 %d 个',
   (html.match(/\u0001|%%MN/g) || []).length, (html.match(/url\(fonts\//g) || []).length,
   (html.match(/<svg /g) || []).length, (html.match(/<table>/g) || []).length);
-console.log('\n  阅读增强：强调 %d 处、专名 %d 处、等式 %d 处、边注 %d 处', R.em, R.term, R.eq, R.note);
+console.log('\n  阅读增强：胶囊 %d 处（其中整句主张 %d、短语标记 %d）、专名 %d 处、边注 %d 处',
+  R.cap, R.wide, R.cap - R.wide, R.term, R.note);
 for (const [k, ln, t] of R.hits.sort((a, b) => a[1] - b[1])) console.log('    ' + k + '  L' + ln + '  ' + t);
-const allT = [...EQ.map(t => ['eq', t]), ...TERMS.map(t => ['term', t]), ...EM.map(t => ['em', t])];
-const miss = allT.filter(([k, t]) => !R.cnt.get(k + '|' + t));
-console.log(miss.length ? '  ✗ 未命中的目标：' + miss.map(([k, t]) => k + ':' + plainOf(t).slice(0, 20)).join(' | ') : '  ✓ 所有增强目标都已命中');
+const miss = TERMS.filter(t => !R.cnt.get('term|' + t));
+console.log(miss.length ? '  ✗ 未命中的目标：' + miss.map(t => plainOf(t).slice(0, 20)).join(' | ') : '  ✓ 专名目标都已命中');
 if (mnMiss.length) console.log('  ✗ 边注目标未解析：%s', mnMiss.join(' | '));

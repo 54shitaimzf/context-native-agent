@@ -47,7 +47,7 @@
 
 ```
 余烬. Agent 重架构：迈向上下文原生智能（Context-Native Agent）[EB/OL].
-v1.3, 2026-09-15. https://github.com/54shitaimzf/context-native-agent
+v1.3.1, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
 ```
 
 GitHub 侧栏的「Cite this repository」可直接导出 APA 与 BibTeX（数据来自 `CITATION.cff`）。
@@ -68,7 +68,7 @@ node verify.mjs              # 逐行文字比对、引用双向可达、内部�
 
 | 脚本 | 干什么 |
 | --- | --- |
-| `build-html.mjs` | Markdown → HTML（分块、表格、目录、图、页边注、强调） |
+| `build-html.mjs` | Markdown → HTML（分块、表格、目录、图、页边注、胶囊） |
 | `build-pdf.mjs` | HTML → PDF，另有 `shots` / `audit` / `tocpages` 模式 |
 | `verify.mjs` | 交付校验 |
 | `measure-pdf.mjs` | 量成品 PDF 里文字的真实位置 |

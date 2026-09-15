@@ -61,9 +61,11 @@ if (dead.length) console.log('   ✗ 找不到锚点：' + dead.slice(0, 10).joi
 
 const mnote = (html.match(/class="mnote"/g) || []).length;
 const cover = html.includes('class="cover"'), toc = (html.match(/class="t\d"/g) || []).length;
-console.log('版面件：封面 %s、目录 %d 行、页边注 %d 条、图 %d 张、强调 %d 处、专名 %d 处、等式 %d 处',
+console.log('版面件：封面 %s、目录 %d 行、页边注 %d 条、图 %d 张、胶囊 %d 处（整句 %d / 短语 %d）、专名 %d 处',
   cover ? '有' : '无', toc, mnote, (html.match(/<figure/g) || []).length,
-  (html.match(/class="em"/g) || []).length, (html.match(/class="term"/g) || []).length, (html.match(/class="eq"/g) || []).length);
+  (html.match(/class="em"|class="claim"/g) || []).length,
+  (html.match(/class="claim"/g) || []).length, (html.match(/class="em"/g) || []).length,
+  (html.match(/class="term"/g) || []).length);
 const visible = body.replace(/<[^>]*>/g, '').replace(/\$\$[\s\S]*?\$\$|\$[^\$\n]*\$/g, ''); // 数学是 KaTeX 源码，不算可见文字
 console.log('残留占位符：%d，正文可见的字面星号：%d', (html.match(/\u0001|%%MN/g) || []).length, (visible.match(/\*/g) || []).length);
 

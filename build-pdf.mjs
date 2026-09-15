@@ -342,7 +342,7 @@ async function injectPdfFonts(cdp, sessionId) {
     ${face('PDF Sans', 'NotoSansSC-SemiBold.ttf', 600)}
     ${face('PDF Sans', 'NotoSansSC-Bold.ttf', 700)}
     ${face('PDF Serif', 'NotoSerifSC-Bold.ttf', 700)}
-    body,main,p,li,td,th,h1,h2,h3,blockquote,figcaption,ol.toc-list,.cv-meta,.mnote,.callout,.cv-thesis,strong,b,.em,.eq,.cl,.cl2,.ct,.cs,.cs2,.cax{font-family:'PDF Sans','Noto Sans SC',sans-serif !important}
+    body,main,p,li,td,th,h1,h2,h3,blockquote,figcaption,ol.toc-list,.cv-meta,.mnote,.callout,.cv-thesis,strong,b,.em,.claim,.cl,.cl2,.ct,.cs,.cs2,.cax{font-family:'PDF Sans','Noto Sans SC',sans-serif !important}
     .cv-title{font-family:'PDF Serif','Noto Serif SC',serif !important}
     .term,code,.cv,.cv2,td.refno,.cv-kicker{font-family:'Cascadia Mono','Source Code Pro',ui-monospace,Consolas,monospace !important}`;
   const st = await cdp.eval(sessionId, `(function(){if(document.getElementById('pdffonts'))return 'already';
