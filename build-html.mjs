@@ -160,49 +160,47 @@ function chartLevels() { // 三种活法 + 本架构
   s += `</svg>`;
   return s;
 }
-function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上下文 build · 前缀重装
-  const W = 760, H = 278;
+function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上下文 build · 合并后重写变动的那一段
+  const W = 760, H = 286;
   const X0 = 170, BW = 126, GAP = 16, SPAN = BW * 4 + GAP * 3, XR = X0 + SPAN;
   const bx = i => X0 + i * (BW + GAP), cx = i => bx(i) + BW / 2;
   const loop = XR + 18;                      // 回环竖线，画在右侧留白里
-  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="上下文原生架构的一轮：共享前缀、四个分支、合并与坐标申报、新前缀">`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="上下文原生架构的一轮：共享前缀、四个分支、合并与更新前缀、新一版前缀">`;
   s += `<defs>`
     + `<marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arw"/></marker>`
     + `<marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arwb"/></marker>`
     + `</defs>`;
   // 共享前缀：所有分支、所有轮次逐字节相同
-  s += `<rect x="${X0}" y="18" width="${SPAN}" height="36" rx="4" class="cboxP"/>`;
-  s += `<text x="${X0 + 16}" y="41" class="cl2">共享缓存前缀　P</text>`;
-  s += `<text x="${XR - 16}" y="41" class="cen" text-anchor="end">逐字节不变 → 缓存命中</text>`;
+  s += `<rect x="${X0}" y="16" width="${SPAN}" height="46" rx="4" class="cboxP"/>`;
+  s += `<text x="${X0 + 16}" y="36" class="cl2">共享缓存前缀　P</text>`;
+  s += `<text x="${X0 + 16}" y="54" class="cen">人设与工具　·　意图映射　·　系统状态</text>`;
+  s += `<text x="${XR - 16}" y="42" class="cen" text-anchor="end">逐字节不变 → 缓存命中</text>`;
   // 环境：共享（分支跑在同一套环境里）
-  s += `<rect x="${X0 - 8}" y="76" width="${SPAN + 16}" height="118" rx="6" class="cenv"/>`;
-  s += `<text x="${X0 + 2}" y="72" class="cen">环境共享</text>`;
+  s += `<rect x="${X0 - 8}" y="84" width="${SPAN + 16}" height="128" rx="6" class="cenv"/>`;
+  s += `<text x="${X0 + 2}" y="80" class="cen">环境共享</text>`;
   // 主 Agent：把种子委派给分支行
-  s += `<rect x="4" y="86" width="112" height="96" rx="4" class="cbox"/>`;
-  s += `<text x="60" y="112" class="cn" text-anchor="middle">主 Agent</text>`;
-  s += `<text x="60" y="136" class="cbs" text-anchor="middle">对齐需求</text>`;
-  s += `<text x="60" y="154" class="cbs" text-anchor="middle">拆分任务</text>`;
-  s += `<text x="60" y="172" class="cbs" text-anchor="middle">定契约与断言</text>`;
-  s += `<text x="139" y="130" class="cn2" text-anchor="middle">委派</text>`;
-  s += `<line x1="116" y1="134" x2="${X0 - 1}" y2="134" class="cflow" marker-end="url(#arwA)"/>`;
+  s += `<rect x="4" y="94" width="112" height="96" rx="4" class="cbox"/>`;
+  s += `<text x="60" y="120" class="cn" text-anchor="middle">主 Agent</text>`;
+  s += `<text x="60" y="144" class="cbs" text-anchor="middle">对齐需求</text>`;
+  s += `<text x="60" y="162" class="cbs" text-anchor="middle">拆分任务</text>`;
+  s += `<text x="60" y="180" class="cbs" text-anchor="middle">定契约与断言</text>`;
+  s += `<text x="139" y="138" class="cn2" text-anchor="middle">委派</text>`;
+  s += `<line x1="116" y1="142" x2="${X0 - 1}" y2="142" class="cflow" marker-end="url(#arwA)"/>`;
   // 四个分支
   for (let i = 0; i < 4; i++) {
-    s += `<line x1="${cx(i)}" y1="54" x2="${cx(i)}" y2="82" class="cflow" marker-end="url(#arwA)"/>`;
-    s += `<rect x="${bx(i)}" y="86" width="${BW}" height="96" rx="4" class="cbox"/>`;
-    s += `<text x="${cx(i)}" y="112" class="cn" text-anchor="middle">分支 ${i + 1}</text>`;
-    s += `<text x="${cx(i)}" y="140" class="cbs" text-anchor="middle">fork 代码</text>`;
-    s += `<text x="${cx(i)}" y="160" class="cbs" text-anchor="middle">build 种子</text>`;
-    s += `<line x1="${cx(i)}" y1="182" x2="${cx(i)}" y2="224" class="cflow" marker-end="url(#arwA)"/>`;
+    s += `<line x1="${cx(i)}" y1="62" x2="${cx(i)}" y2="90" class="cflow" marker-end="url(#arwA)"/>`;
+    s += `<rect x="${bx(i)}" y="94" width="${BW}" height="96" rx="4" class="cbox"/>`;
+    s += `<text x="${cx(i)}" y="120" class="cn" text-anchor="middle">分支 ${i + 1}</text>`;
+    s += `<text x="${cx(i)}" y="148" class="cbs" text-anchor="middle">fork 代码</text>`;
+    s += `<text x="${cx(i)}" y="168" class="cbs" text-anchor="middle">build 种子</text>`;
+    s += `<line x1="${cx(i)}" y1="190" x2="${cx(i)}" y2="232" class="cflow" marker-end="url(#arwA)"/>`;
   }
-  // 合并与坐标申报
-  s += `<rect x="${X0}" y="228" width="${SPAN}" height="38" rx="4" class="cbox"/>`;
-  s += `<text x="${X0 + 16}" y="252" class="cn">单写者合并　＋　坐标申报 M</text>`;
-  s += `<text x="${XR - 16}" y="252" class="cen" text-anchor="end">→ 新前缀</text>`;
-  // 回到前缀：新前缀成为下一轮的公共前缀
-  s += `<polyline points="${XR},247 ${loop},247 ${loop},36 ${XR - 8},36" class="cloop" marker-end="url(#arwB)"/>`;
-  // 下一轮
-  s += `<polyline points="${X0},247 64,247 64,188" class="cflowD" marker-end="url(#arwA)"/>`;
-  s += `<text x="70" y="241" class="cen">下一轮</text>`;
+  // 合并与更新前缀
+  s += `<rect x="${X0}" y="236" width="${SPAN}" height="38" rx="4" class="cbox"/>`;
+  s += `<text x="${X0 + 16}" y="260" class="cn">单写者合并　·　重写意图映射 M</text>`;
+  s += `<text x="${XR - 16}" y="260" class="cen" text-anchor="end">Harness 分段装配</text>`;
+  // 回到前缀：新一版前缀成为下一轮的公共前缀（箭头止于前缀右边界，不入框）
+  s += `<polyline points="${XR},255 ${loop},255 ${loop},39 ${XR},39" class="cloop" marker-end="url(#arwB)"/>`;
   return s + '</svg>';
 }
 function figure(svg, cap) { return `<figure class="fig">${svg}<figcaption>${cap}</figcaption></figure>`; }
@@ -265,13 +263,12 @@ for (const b of blocks) {
     const am = plain.match(/^\*作者：(.*)\*$/);
     if (am) { out.push(`<p class="doc-author">作者：${am[1]}</p>`); continue; }
     let idAttr = '';
-    const isAbs = curSection.startsWith('摘要');
-    let h = '<p' + idAttr + (isAbs ? ' class="abs"' : '') + '>' + b.lines.map(inline).join('<br>') + '</p>';
+    let h = '<p' + idAttr + '>' + b.lines.map(inline).join('<br>') + '</p>';
     if (curSection.startsWith('正文')) h = enhance(h, plain, b.ln);
     out.push(h);
     // 架构拓扑图：紧跟在“以这一理念出发……”这一句之后，正文一字未动
     if (curSection.startsWith('正文') && plain.startsWith('以这一理念出发')) {
-      out.push(figure(chartArch(), '图 3　上下文原生：上下文不再是需要被管理的缓冲区，而是每轮从环境重新生成、用完即散的一层投影。一轮的动作是——环境维持共享、代码 fork、上下文 build；合并后只把<b>坐标</b>写回前缀，下一轮照坐标重装。共享前缀逐字节不变，所以每轮只为它付一次未命中；分支的上下文随分支消失，原文留在 git 里。数据源：正文“具体实现”一节。'));
+      out.push(figure(chartArch(), '图 3　一轮的动作：环境维持共享、代码 fork、上下文 build。全部子 Agent 回归后由主 Agent 单写者合并，并重写需要模型更新的那一段，其余各段由 Harness 从环境取出、分段装配成新一版前缀。没变的字节照旧命中缓存；分支的上下文随分支消失，原文留在 git 里。数据源：正文“具体实现”一节。'));
     }
     continue;
   }
@@ -295,7 +292,7 @@ for (const b of blocks) {
     const isLevelsTable = /活法/.test(b.rows[0]);
     out.push(renderTable(b.rows));
     if (isStepsTable) out.push(figure(chartSteps(), '图 1　一份内容的四种价钱：把单价换算成“背着它走多少步”。数据源：附录2 A2.2（横轴对数刻度；台阶四为 0，用空心方块标记）。'));
-    if (isLevelsTable) out.push(figure(chartLevels(), '图 2　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，工程上不可达、实测里没有人能走到；本架构一档取 20% 水位、4 分支、申报 10k。数据源：附录2 A2.4 / A2.5。'));
+    if (isLevelsTable) out.push(figure(chartLevels(), '图 2　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，工程上不可达、实测里没有人能走到；本架构一档取 20% 水位、4 分支、更新量 10k。数据源：附录2 A2.4 / A2.5。'));
     continue;
   }
 }
@@ -442,7 +439,6 @@ body.light .toolbar{margin:18px 0 30px}
   main{max-width:none;padding:0;font-size:10.5pt;line-height:1.75}
   main h2{font-size:13.5pt;margin:12mm 0 4mm}
   main h3{font-size:11.5pt;color:#111;margin:7mm 0 2.5mm}
-  main .abs{font-size:9.75pt;line-height:1.72;color:#333;margin:0 7mm .6em}
   .cover,.tocpage{display:block}
   .doc-title,p.doc-author{display:none}
   .cover{display:flex;flex-direction:column;min-height:248mm;break-after:page;page-break-after:always;padding-top:0}
@@ -497,8 +493,7 @@ figcaption{font-size:12px;color:var(--muted);text-align:left;margin-top:7px;line
 .arw{fill:var(--rule-ink)}
 .arwb{fill:var(--accent)}
 .cn2{font-size:14px;fill:var(--muted);letter-spacing:.06em}
-/* 摘要：比正文小半号并左右缩进，与序言分开 */
-.abs{font-size:15px;line-height:1.82;color:var(--ink-soft);margin:0 1.7em .72em}
+/* 前缀名与专名的细线提示 */
 footer{border-top:1px solid var(--rule);margin-top:56px;padding-top:14px;font-size:11px;color:var(--muted);line-height:1.75}
 footer .cl{display:block;font-size:9.5px;letter-spacing:.34em;color:var(--muted);margin-bottom:5px}
 footer code{font-size:.94em}

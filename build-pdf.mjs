@@ -437,12 +437,15 @@ async function mode_tocpages(cdp, sessionId) {
   }
   const map = {};
   const miss = [];
-  // 先识别"目录页"：一页里出现 ≥4 个标题，就是目录（目录可能不止一页），从页码检索里排除
+  // 先识别"目录页"：一页里出现相当多的标题，才是目录（目录可能不止一页），从页码检索里排除。
+  // 阈值取"目标的四成、且不少于 8"——正文某页碰巧同时出现四五个小标题是常事（附录3 那一页就是），
+  // 用固定 4 会把正文页误判成目录页，被误判的那一页上的标题就全查不到页码。
   const needles = targets.map(t => squash(t.text).slice(0, 12));
+  const tocMin = Math.max(8, Math.ceil(needles.length * 0.4));
   const tocPages = new Set();
   texts.forEach((t, i) => {
     const s = squash(t);
-    if (needles.filter(n => n && s.includes(n)).length >= 4) tocPages.add(i + 1);
+    if (needles.filter(n => n && s.includes(n)).length >= tocMin) tocPages.add(i + 1);
   });
   for (const t of targets) {
     const needle = squash(t.text).slice(0, 14);
