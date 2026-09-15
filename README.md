@@ -29,6 +29,10 @@
 
 另有 `REVISION.md`（改了哪里、原来是什么、改后是什么，逐条记着），以及一条把 Markdown 渲染成 HTML、PDF 的脚本链。
 
+## 讨论
+
+勘误、质疑，以及你按文中口径算出来的结果，都欢迎发在 **[Discussions](https://github.com/54shitaimzf/context-native-agent/discussions)**。参数与取法列在附录2，对着算比空说有用。
+
 ## 许可
 
 | 范围 | 许可 |
