@@ -14,7 +14,8 @@
     "tocpages": "node build-pdf.mjs tocpages",
     "verify": "node verify.mjs",
     "measure": "node measure-pdf.mjs",
-    "punctuation:dry": "node normalize-punctuation.mjs"
+    "punctuation:dry": "node normalize-punctuation.mjs",
+    "space:dry": "node normalize-cjk-space.mjs"
   },
   "devDependencies": {
     "katex": "0.16.47"

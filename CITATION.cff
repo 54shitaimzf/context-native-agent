@@ -5,7 +5,7 @@ abstract: "中文长文，约 2.9 万字（序言 + 正文 + 三个附录，汉�
 authors:
   - alias: "余烬"
 type: software
-version: "1.9"
+version: "1.9.1"
 date-released: "2026-09-16"
 license: CC-BY-NC-4.0
 url: "https://github.com/54shitaimzf/context-native-agent"
@@ -23,6 +23,6 @@ preferred-citation:
     - alias: "余烬"
   year: 2026
   date-released: "2026-09-16"
-  version: "1.9"
+  version: "1.9.1"
   url: "https://github.com/54shitaimzf/context-native-agent"
   repository-code: "https://github.com/54shitaimzf/context-native-agent"
