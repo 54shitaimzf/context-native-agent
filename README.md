@@ -46,7 +46,7 @@ AI 干活，靠的是每一轮喂给它的那段内容（行话叫"上下文"）
 
 - **[`.md`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.md)** —— 源文件，唯一事实来源
 - **[`.html`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.html)** —— 单文件网页版，公式也在文件里，断网可用
-- **[`.pdf`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.pdf)** —— A4 排版成品，39 页，带页码目录与可点链接
+- **[`.pdf`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.pdf)** —— A4 排版成品，40 页，6 张图，带页码目录与可点链接
 
 另有 `REVISION.md`：改了哪里、原来是什么、改后是什么，逐条记着。以及 `UNDERSTANDING.md`：这篇的口径、容易读错的地方与边界，给准备引用或接手的人看。
 
@@ -62,13 +62,13 @@ AI 干活，靠的是每一轮喂给它的那段内容（行话叫"上下文"）
 | 构建脚本（`*.mjs` / `*.py`） | [MIT](LICENSE-CODE) |
 | 成品里内嵌的第三方组件（思源黑体/宋体、KaTeX） | 见 [THIRD-PARTY.md](THIRD-PARTY.md) |
 
-附录3 里的【原文】引用，文字权利仍属原作者；本仓库的许可只覆盖作者自己的表达。正文在 v1.5.2、v1.5.4、v1.5.5、v1.5.6 做过经作者批准的改动（删掉整节摘要、解空间那一节前移、合并那一步的口径与三处措辞修复、六处定性收口、四处术语与口径收窄），其余改动只有标点规范化，逐条见 `REVISION.md` 第一节。
+附录3 里的【原文】引用，文字权利仍属原作者；本仓库的许可只覆盖作者自己的表达。正文在 v1.5.2、v1.5.4、v1.5.5、v1.5.6 做过经作者批准的改动（删掉整节摘要、解空间那一节前移、合并那一步的口径与三处措辞修复、六处定性收口、四处术语与口径收窄），v1.6 只重做图（正文一字未动），其余改动只有标点规范化，逐条见 `REVISION.md` 第一节。
 
 ## 引用
 
 ```
 余烬. Agent 重架构：迈向上下文原生智能（Context-Native Agent）[EB/OL].
-v1.5.6, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
+v1.6, 2026-09-16. https://github.com/54shitaimzf/context-native-agent
 ```
 
 GitHub 侧栏的「Cite this repository」可直接导出 APA 与 BibTeX（数据来自 `CITATION.cff`）。

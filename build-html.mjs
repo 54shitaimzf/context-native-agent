@@ -133,7 +133,7 @@ function chartLevels() { // 三种活法 + 本架构
   const groups = [
     { name: '基线 31%', sub: '实测停手处', carry: 162.6, bill: 7.02, ours: false },
     { name: '基线 80%', sub: '', carry: 407.6, bill: 16.97, ours: false },
-    { name: '基线 8%', sub: '不可达', carry: 47.8, bill: 3.33, ours: false, ghost: true },
+    { name: '基线 8%', sub: '纸面点', carry: 47.8, bill: 3.33, ours: false, ghost: true },
     { name: '本架构 20%', sub: '', carry: 130.0, bill: 5.70, ours: true },
   ];
   const W = 760, H = 346, padB = 64, top = 48;
@@ -160,47 +160,183 @@ function chartLevels() { // 三种活法 + 本架构
   s += `</svg>`;
   return s;
 }
-function chartArch() { // 一轮的动作：环境共享 · 代码 fork · 上下文 build · 合并后重写变动的那一段
-  const W = 760, H = 286;
+function chartLowWater() { // 图 1：低水位不是调出来的，是拆出来的（基线一层 / 本架构两层）
+  const W = 760, H = 246;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="基线只有一层上下文；本架构把理解与干活拆成两层">`;
+  s += `<text x="6" y="18" class="cl2">理解与干活分成两层，上下文才可能一直短</text>`;
+  // 左：基线只有一层
+  s += `<rect x="6" y="34" width="358" height="182" rx="6" class="cenv"/>`;
+  s += `<text x="20" y="58" class="cl2">基线：上下文只有一层</text>`;
+  s += `<rect x="20" y="74" width="330" height="44" rx="3" class="cbox"/>`;
+  s += `<text x="185" y="94" class="cn" text-anchor="middle">理解 ＋ 干活</text>`;
+  s += `<text x="185" y="111" class="cbs" text-anchor="middle">挤在同一段内容里</text>`;
+  s += `<text x="20" y="142" class="cs">串行、不拆分</text>`;
+  s += `<text x="20" y="160" class="cs">→ 必须带着足量的信息干活</text>`;
+  s += `<text x="20" y="184" class="cs">按钱算的最优点 8% 只是纸面点</text>`;
+  s += `<text x="20" y="202" class="cs">（实测里也没人走到）</text>`;
+  // 右：本架构两层
+  s += `<rect x="396" y="34" width="358" height="182" rx="6" class="cenv"/>`;
+  s += `<text x="410" y="58" class="cl2">本架构：两层</text>`;
+  s += `<text x="410" y="84" class="cn">① 全量理解一次（先读一遍全局）</text>`;
+  s += `<text x="742" y="84" class="cbs" text-anchor="end">理解层</text>`;
+  s += `<line x1="410" y1="93" x2="742" y2="93" class="csig"/>`;
+  s += `<text x="410" y="114" class="cn">② 编译进前缀：短、稳、每步都读</text>`;
+  s += `<text x="426" y="132" class="cs">（写一次，此后按命中价复用）</text>`;
+  s += `<text x="742" y="162" class="cbs" text-anchor="end">干活层</text>`;
+  s += `<text x="410" y="162" class="cn">③ 拆分任务</text>`;
+  s += `<text x="410" y="190" class="cn">④ 每分支只装自己那一片</text>`;
+  s += `<text x="426" y="208" class="cs">（缺什么按需读一次）</text>`;
+  s += `<text x="380" y="238" class="cen" text-anchor="middle">干活时上下文很短，但内容没丢——原文留在环境里</text>`;
+  return s + '</svg>';
+}
+function chartScales() { // 图 3：两个尺度的重启（目标级 / 轮级）
+  const W = 760, H = 312;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="两个尺度的重启：目标级与轮级，一轮之内不换前缀版本">`;
+  s += `<defs>`
+    + `<marker id="arwC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arw"/></marker>`
+    + `</defs>`;
+  s += `<text x="6" y="18" class="cl2">重启有两个尺度：目标与轮；一轮之内不换前缀版本</text>`;
+  // 目标级
+  s += `<rect x="6" y="34" width="748" height="34" rx="3" class="cbox"/>`;
+  s += `<text x="380" y="56" class="cbs" text-anchor="middle">目标级：一次任务边界 ＝ 用户目标（「我要加个功能」「我要完成某个版本」）</text>`;
+  s += `<line x1="748" y1="68" x2="748" y2="80" class="cflow"/>`;
+  s += `<line x1="196" y1="68" x2="196" y2="100" class="cflow" marker-end="url(#arwC)"/>`;
+  s += `<text x="206" y="90" class="cs">放大一轮</text>`;
+  s += `<text x="6" y="98" class="cs">主 Agent 把它拆成多轮</text>`;
+  s += `<text x="754" y="98" class="cs" text-anchor="end">目标达成：对代码库、功能与意图状态的一次大更新</text>`;
+  // 轮级：放大一轮
+  s += `<rect x="6" y="104" width="380" height="162" rx="6" class="cenv"/>`;
+  s += `<text x="16" y="122" class="cn">轮 1（放大）</text>`;
+  s += `<rect x="16" y="132" width="360" height="30" rx="3" class="cboxP"/>`;
+  s += `<text x="196" y="152" class="cbs" text-anchor="middle">一版前缀 P₁（所有分支逐字节相同）</text>`;
+  const bcx = i => 16 + i * 91.5 + 42.75;
+  for (let i = 0; i < 4; i++) s += `<line x1="${bcx(i)}" y1="162" x2="${bcx(i)}" y2="174" class="cflow" marker-end="url(#arwC)"/>`;
+  for (let i = 0; i < 4; i++) {
+    s += `<rect x="${16 + i * 91.5}" y="174" width="85.5" height="28" rx="3" class="cbox"/>`;
+    s += `<text x="${bcx(i)}" y="193" class="cbs" text-anchor="middle">分支 ${i + 1}</text>`;
+  }
+  for (let i = 0; i < 4; i++) s += `<line x1="${bcx(i)}" y1="202" x2="${bcx(i)}" y2="214" class="cflow" marker-end="url(#arwC)"/>`;
+  s += `<rect x="16" y="214" width="360" height="30" rx="3" class="cbox"/>`;
+  s += `<text x="196" y="234" class="cbs" text-anchor="middle">轮末归并 · 重写变动的那一段 · 换代</text>`;
+  s += `<text x="196" y="260" class="cs" text-anchor="middle">↓ 下一轮直接用新版前缀</text>`;
+  // 右侧注解
+  s += `<text x="404" y="124" class="cn">轮内：前缀逐字节不变</text>`;
+  s += `<text x="404" y="146" class="cs">→ 四个分支各自命中</text>`;
+  s += `<text x="404" y="164" class="cs">→ 未命中按前缀版本数计，不按分支数计</text>`;
+  s += `<text x="404" y="196" class="cn">换代：一次重启</text>`;
+  s += `<text x="404" y="216" class="cs">→ 只在这里付一次未命中</text>`;
+  s += `<text x="404" y="234" class="cs">→ 主 Agent 上下文重建</text>`;
+  // 线性特例
+  s += `<rect x="6" y="276" width="748" height="34" rx="6" class="cenv"/>`;
+  s += `<text x="18" y="298" class="cs">不易解耦 / 规模小 → 收敛为少分支，乃至单分支：线性结构是特例——落地仍然委派</text>`;
+  return s + '</svg>';
+}
+function chartAmortize() { // 图 4：未命中按前缀版本数计，不按分支数计
+  const W = 760, H = 256;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="一版前缀被多个分支共享：未命中按前缀版本数计，不按分支数计">`;
+  s += `<defs>`
+    + `<marker id="arwD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arw"/></marker>`
+    + `<marker id="arwE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arws"/></marker>`
+    + `</defs>`;
+  s += `<text x="6" y="18" class="cl2">未命中按前缀版本数计，不按分支数计</text>`;
+  // 一轮之内
+  s += `<text x="6" y="46" class="cn">一轮之内：一版前缀，四个分支</text>`;
+  s += `<rect x="6" y="58" width="132" height="32" rx="3" class="cboxP"/>`;
+  s += `<text x="72" y="79" class="cbs" text-anchor="middle">前缀 第 v 版</text>`;
+  s += `<line x1="138" y1="74" x2="164" y2="74" class="cflow" marker-end="url(#arwD)"/>`;
+  for (let i = 0; i < 4; i++) {
+    const x = 170 + i * 84;
+    s += `<rect x="${x}" y="58" width="76" height="32" rx="3" class="cbox"/>`;
+    s += `<text x="${x + 38}" y="79" class="cbs" text-anchor="middle">分支 ${i + 1}</text>`;
+  }
+  s += `<text x="170" y="112" class="cs">四个分支共享同一版字节：命中 ×4、未命中 ×0</text>`;
+  s += `<text x="170" y="130" class="cs">（若要按分支计未命中，这里就该是 ×4）</text>`;
+  // 换代
+  s += `<line x1="72" y1="94" x2="72" y2="136" class="csig" marker-end="url(#arwE)"/>`;
+  s += `<text x="82" y="120" class="cs">换代</text>`;
+  s += `<rect x="6" y="142" width="132" height="32" rx="3" class="cboxP"/>`;
+  s += `<text x="72" y="163" class="cbs" text-anchor="middle">前缀 第 v+1 版</text>`;
+  s += `<text x="152" y="164" class="cs">未命中 ×1，只落在变动的那一段上</text>`;
+  // 右侧：计费次数的形状
+  s += `<text x="520" y="44" class="cn">累计重读次数（只是形状）</text>`;
+  s += `<line x1="520" y1="62" x2="542" y2="62" class="cflow"/><text x="548" y="66" class="cs">基线</text>`;
+  s += `<line x1="640" y1="62" x2="662" y2="62" class="cloop"/><text x="668" y="66" class="cs">本架构</text>`;
+  s += `<text x="520" y="88" class="cax">↑ 次数（示意）</text>`;
+  s += `<line x1="520" y1="212" x2="752" y2="212" class="caxis"/>`;
+  s += `<text x="752" y="228" class="cax" text-anchor="end">步 →</text>`;
+  // 基线：每步重读（阶梯，末级平收）
+  let bp = [];
+  for (let i = 0; i < 8; i++) {
+    const y = 200 - i * 12, x1 = 520 + i * 29, x2 = 520 + (i + 1) * 29;
+    bp.push(`${x1},${y}`, `${x2},${y}`);
+    if (i < 7) bp.push(`${x2},${200 - (i + 1) * 12}`);
+  }
+  s += `<polyline points="${bp.join(' ')}" class="cflow"/>`;
+  // 本架构：只在换代时跳两下（层级错开基线，避免横段被压住）
+  s += `<polyline points="520,194 600,194 600,170 690,170 690,146 752,146" class="cloop"/>`;
+  s += `<text x="6" y="248" class="cen">N ＝ 1 时退化为线性结构——线性是特例（见正文图 3）</text>`;
+  return s + '</svg>';
+}
+function chartArch() { // 图 2：一轮的动作（四段前缀 · 段序 · 虚拟工作区 · 信号 · 合并口径）
+  const W = 760, H = 320;
   const X0 = 170, BW = 126, GAP = 16, SPAN = BW * 4 + GAP * 3, XR = X0 + SPAN;
-  const bx = i => X0 + i * (BW + GAP), cx = i => bx(i) + BW / 2;
-  const loop = XR + 18;                      // 回环竖线，画在右侧留白里
-  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="上下文原生架构的一轮：共享前缀、四个分支、合并与更新前缀、新一版前缀">`;
+  const cx = i => X0 + i * (BW + GAP) + BW / 2;
+  const loop = XR + 18, br = XR + 10;        // 回环竖线画在右侧留白里，br 是"整片前缀"的括线
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="一轮的动作：四段共享前缀、四个分支、合并与更新前缀、新一版前缀">`;
   s += `<defs>`
     + `<marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arw"/></marker>`
     + `<marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9.5" markerHeight="9.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arwb"/></marker>`
+    + `<marker id="arwS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arws"/></marker>`
     + `</defs>`;
-  // 共享前缀：所有分支、所有轮次逐字节相同
-  s += `<rect x="${X0}" y="16" width="${SPAN}" height="46" rx="4" class="cboxP"/>`;
-  s += `<text x="${X0 + 16}" y="36" class="cl2">共享缓存前缀　P</text>`;
-  s += `<text x="${X0 + 16}" y="54" class="cen">人设与工具　·　意图映射　·　系统状态</text>`;
-  s += `<text x="${XR - 16}" y="36" class="cen" text-anchor="end">逐字节不变 → 缓存命中</text>`;
-  // 环境：共享（分支跑在同一套环境里）
-  s += `<rect x="${X0 - 8}" y="84" width="${SPAN + 16}" height="128" rx="6" class="cenv"/>`;
-  s += `<text x="${X0 + 2}" y="80" class="cen">环境共享</text>`;
-  // 主 Agent：把种子委派给分支行
-  s += `<rect x="4" y="94" width="112" height="96" rx="4" class="cbox"/>`;
-  s += `<text x="60" y="120" class="cn" text-anchor="middle">主 Agent</text>`;
-  s += `<text x="60" y="144" class="cbs" text-anchor="middle">对齐需求</text>`;
-  s += `<text x="60" y="162" class="cbs" text-anchor="middle">拆分任务</text>`;
-  s += `<text x="60" y="180" class="cbs" text-anchor="middle">定契约与断言</text>`;
-  s += `<text x="139" y="138" class="cn2" text-anchor="middle">委派</text>`;
-  s += `<line x1="116" y1="142" x2="${X0 - 1}" y2="142" class="cflow" marker-end="url(#arwA)"/>`;
+  s += `<text x="6" y="14" class="cl2">一轮里变的是尾部那一段，不变的是整片前缀</text>`;
+  // 组标签 + 括线：稳定段照旧命中 / 易变段付一次未命中
+  s += `<text x="${X0 + 150}" y="34" class="cen" text-anchor="middle">没变的字节照旧命中</text>`;
+  s += `<text x="${X0 + 426}" y="34" class="cen" text-anchor="middle">只有变动的那一段付一次未命中</text>`;
+  s += `<path d="M${X0},48 L${X0},44 L${X0 + 300},44 L${X0 + 300},48" class="cflow"/>`;
+  s += `<path d="M${X0 + 300},48 L${X0 + 300},44 L${X0 + SPAN},44 L${X0 + SPAN},48" class="cflow"/>`;
+  // 四段前缀：前两段稳定、后两段易变（底色深浅分两组），易变段在尾部
+  const segs = [['人设与工具清单', 160, 'cboxP'], ['项目结构说明', 140, 'cboxP'], ['意图映射', 120, 'cbox'], ['系统状态', 132, 'cbox']];
+  let sx = X0;
+  for (const [t, w, cls] of segs) {
+    s += `<rect x="${sx}" y="52" width="${w}" height="32" class="${cls}"/>`;
+    s += `<text x="${sx + w / 2}" y="73" class="cbs" text-anchor="middle">${t}</text>`;
+    sx += w;
+  }
+  // 整片前缀的括线（带两端短钩）：回环箭头指这里，表示"整片"而不是最后一格
+  s += `<line x1="${br}" y1="52" x2="${br}" y2="84" class="cflow"/>`;
+  s += `<line x1="${br - 6}" y1="52" x2="${br}" y2="52" class="cflow"/>`;
+  s += `<line x1="${br - 6}" y1="84" x2="${br}" y2="84" class="cflow"/>`;
+  // 环境：底层内容一份 + 每分支一份虚拟工作区
+  s += `<rect x="${X0 - 8}" y="96" width="${SPAN + 16}" height="132" rx="6" class="cenv"/>`;
+  s += `<text x="${X0}" y="122" class="cen">环境：底层内容一份（共享）· 每分支一份虚拟工作区（写时才占空间）</text>`;
+  // 主 Agent：用户与子 Agent 都是信号
+  s += `<text x="60" y="110" class="cn2" text-anchor="middle">用户</text>`;
+  s += `<line x1="60" y1="114" x2="60" y2="122" class="csig" marker-end="url(#arwS)"/>`;
+  s += `<rect x="4" y="128" width="112" height="88" rx="4" class="cbox"/>`;
+  s += `<text x="60" y="150" class="cn" text-anchor="middle">主 Agent</text>`;
+  s += `<text x="60" y="170" class="cbs" text-anchor="middle">对齐需求</text>`;
+  s += `<text x="60" y="186" class="cbs" text-anchor="middle">拆分任务</text>`;
+  s += `<text x="60" y="202" class="cbs" text-anchor="middle">定契约与断言</text>`;
+  s += `<text x="139" y="148" class="cn2" text-anchor="middle">委派</text>`;
+  s += `<line x1="116" y1="154" x2="${X0 - 1}" y2="154" class="cflow" marker-end="url(#arwA)"/>`;
+  s += `<text x="139" y="198" class="cn2" text-anchor="middle">信号</text>`;
+  s += `<line x1="${X0 - 1}" y1="206" x2="118" y2="206" class="csig" marker-end="url(#arwS)"/>`;
   // 四个分支
   for (let i = 0; i < 4; i++) {
-    s += `<line x1="${cx(i)}" y1="62" x2="${cx(i)}" y2="90" class="cflow" marker-end="url(#arwA)"/>`;
-    s += `<rect x="${bx(i)}" y="94" width="${BW}" height="96" rx="4" class="cbox"/>`;
-    s += `<text x="${cx(i)}" y="120" class="cn" text-anchor="middle">分支 ${i + 1}</text>`;
-    s += `<text x="${cx(i)}" y="148" class="cbs" text-anchor="middle">fork 代码</text>`;
-    s += `<text x="${cx(i)}" y="168" class="cbs" text-anchor="middle">build 种子</text>`;
-    s += `<line x1="${cx(i)}" y1="190" x2="${cx(i)}" y2="232" class="cflow" marker-end="url(#arwA)"/>`;
+    s += `<line x1="${cx(i)}" y1="84" x2="${cx(i)}" y2="92" class="cflow" marker-end="url(#arwA)"/>`;
+    s += `<rect x="${X0 + i * (BW + GAP)}" y="132" width="${BW}" height="80" rx="4" class="cbox"/>`;
+    s += `<text x="${cx(i)}" y="156" class="cn" text-anchor="middle">分支 ${i + 1}</text>`;
+    s += `<text x="${cx(i)}" y="178" class="cbs" text-anchor="middle">fork 代码</text>`;
+    s += `<text x="${cx(i)}" y="198" class="cbs" text-anchor="middle">build 种子</text>`;
+    s += `<line x1="${cx(i)}" y1="212" x2="${cx(i)}" y2="240" class="cflow" marker-end="url(#arwA)"/>`;
   }
   // 合并与更新前缀
-  s += `<rect x="${X0}" y="236" width="${SPAN}" height="38" rx="4" class="cbox"/>`;
-  s += `<text x="${X0 + 16}" y="260" class="cn">单写者合并　·　重写意图映射 M</text>`;
-  s += `<text x="${XR - 16}" y="260" class="cen" text-anchor="end">Harness 分段装配</text>`;
-  // 回到前缀：新一版前缀成为下一轮的公共前缀（箭头止于前缀右边界，不入框）
-  s += `<polyline points="${XR},255 ${loop},255 ${loop},39 ${XR},39" class="cloop" marker-end="url(#arwB)"/>`;
+  s += `<rect x="${X0}" y="244" width="${SPAN}" height="44" rx="4" class="cbox"/>`;
+  s += `<text x="${X0 + 16}" y="262" class="cn">单写者合并 · 主分支依契约择优</text>`;
+  s += `<text x="${X0 + 16}" y="281" class="cbs">重写需要更新的那一段（意图映射 · 系统状态）· Harness 分段装配其余各段</text>`;
+  // 回到前缀：新一版前缀成为下一轮的公共前缀（箭头指整片前缀的括线，不入框）
+  s += `<polyline points="${XR},266 ${loop},266 ${loop},68 ${br + 1},68" class="cloop" marker-end="url(#arwB)"/>`;
+  s += `<text x="${XR}" y="308" class="cen" text-anchor="end">回环：新一版前缀成为下一轮的公共前缀</text>`;
   return s + '</svg>';
 }
 function figure(svg, cap) { return `<figure class="fig">${svg}<figcaption>${cap}</figcaption></figure>`; }
@@ -266,9 +402,12 @@ for (const b of blocks) {
     let h = '<p' + idAttr + '>' + b.lines.map(inline).join('<br>') + '</p>';
     if (curSection.startsWith('正文')) h = enhance(h, plain, b.ln);
     out.push(h);
-    // 架构拓扑图：紧跟在“以这一理念出发……”这一句之后，正文一字未动
+    // 架构图：紧跟在“以这一理念出发……”与合并那一段之后，正文一字未动
     if (curSection.startsWith('正文') && plain.startsWith('以这一理念出发')) {
-      out.push(figure(chartArch(), '图 3　一轮的动作：环境维持共享、代码 fork、上下文 build。全部子 Agent 回归后由主 Agent 单写者合并，并重写需要模型更新的那一段，其余各段由 Harness 从环境取出、分段装配成新一版前缀。没变的字节照旧命中缓存；分支的上下文随分支消失，原文留在 git 里。数据源：正文“具体实现”一节。'));
+      out.push(figure(chartArch(), '图 2　一轮的动作。四段前缀按此顺序固定：前两段整轮逐字节不变，后两段（意图映射、系统状态）每版更新，所以未命中只落在后两段上。环境侧底层内容只有一份，每个分支一份虚拟工作区、写时才占空间。合并由主 Agent 以单写者执行，依据是它制定契约时的那份上下文；分支的上下文随分支消失，原文留在 git 里。数据源：正文“具体实现”一节、附录2 A2.4。'));
+    }
+    if (curSection.startsWith('正文') && plain.startsWith('全部子Agent回归后')) {
+      out.push(figure(chartScales(), '图 3　两个尺度。目标级由用户给出（一次任务边界），主 Agent 把它拆成多轮；轮级由归并触发——一轮结束、前缀换代，主 Agent 的上下文随之重建。一轮之内前缀不换版本，所以那一版只在换代时付一次未命中。不易解耦或规模小的时候，分支数可以收敛到一：那是线性结构，而线性是这个循环结构的特例——落地仍然委派。数据源：正文“具体实现”一节。'));
     }
     continue;
   }
@@ -285,14 +424,20 @@ for (const b of blocks) {
       return h;
     });
     out.push(`<${b.t}>` + items.join('') + `</${b.t}>`);
+    // 低水位图：紧跟在解空间那一节的列表之后（正文一字未动）
+    if (curSection.startsWith('正文') && b.items.join('').includes('不构建')) {
+      out.push(figure(chartLowWater(), '图 1　两种结构下的水位（水位＝每一步平均背着的上下文有多少，附录2 会用这个说法算账）。在基线那一层里，理解与干活是同一段内容，压掉它省下的正是它干活所必需的那部分理解，所以 8% 对基线是纸面点、不是可选的工作点；本架构这一侧，理解被编译进前缀后每一步都在，干活只装自己那一片，缺的内容按需读一次、仍走“第一次构建”那一档。数据源：正文“被换掉的是解空间”、附录2 A2.7 第二条。'));
+    }
     continue;
   }
   if (b.t === 'table') {
     const isStepsTable = /台阶/.test(b.rows[0]);
     const isLevelsTable = /活法/.test(b.rows[0]);
+    const isCostTable = b.rows.flat().join('').includes('只有每版变动的那一段');
     out.push(renderTable(b.rows));
-    if (isStepsTable) out.push(figure(chartSteps(), '图 1　一份内容的四种价钱：把单价换算成“背着它走多少步”。数据源：附录2 A2.2（横轴对数刻度；台阶四为 0，用空心方块标记）。'));
-    if (isLevelsTable) out.push(figure(chartLevels(), '图 2　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，而串行又不拆分就必须带着足量的信息干活，所以那只是纸面点，实测里也没有人走到；本架构一档取 20% 水位、4 分支、更新量 10k。数据源：附录2 A2.4 / A2.5。'));
+    if (isCostTable) out.push(figure(chartAmortize(), '图 4　共享的摊薄形状。一版前缀在同一轮内被所有分支逐字节复用，未命中只发生在换代那一次、且只落在变动的那一段上——所以它按前缀版本数计，不按分支数计；左侧那行括注写的就是“若按分支计”会差成什么样。右侧只画“重读次数”的形状，不含新数字。数据源：附录2 A2.4 的重置项。'));
+    if (isStepsTable) out.push(figure(chartSteps(), '图 5　一份内容的四种价钱：把单价换算成“背着它走多少步”。数据源：附录2 A2.2（横轴对数刻度；台阶四为 0，用空心方块标记）。'));
+    if (isLevelsTable) out.push(figure(chartLevels(), '图 6　三种活法与本架构的对比。31% 一档是实测中人工停手的位置（中位 30.9%）；@8% 一档是基线按钱算出的最优点，而串行又不拆分就必须带着足量的信息干活，所以那只是纸面点，实测里也没有人走到；本架构一档取 20% 水位、4 分支、更新量 10k。数据源：附录2 A2.4 / A2.5。'));
     continue;
   }
 }
@@ -485,6 +630,8 @@ figcaption{font-size:12px;color:var(--muted);text-align:left;margin-top:7px;line
 .cbox{fill:var(--tint);stroke:var(--rule-ink);stroke-width:1}
 .cenv{fill:none;stroke:var(--rule);stroke-width:1;stroke-dasharray:4 4}
 .cflow{stroke:var(--rule-ink);stroke-width:1;fill:none}
+.csig{stroke:var(--muted);stroke-width:1;fill:none;stroke-dasharray:4 4}
+.arws{fill:var(--muted)}
 .cflowD{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3;fill:none}
 .cloop{stroke:var(--accent);stroke-width:1.5;fill:none}
 .cn{font-size:14px;fill:var(--ink);font-weight:600}
