@@ -238,7 +238,7 @@ function chartAmortize() { // 图 4：未命中按前缀版本数计，不按分
     + `<marker id="arwD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arw"/></marker>`
     + `<marker id="arwE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arws"/></marker>`
     + `</defs>`;
-  s += `<text x="6" y="18" class="cl2">未命中按前缀版本数计，不按分支数计</text>`;
+  s += `<text x="6" y="18" class="cl2">未命中按前缀版本数计，不按分支数计（同模型；见 A3.6）</text>`;
   // 一轮之内
   s += `<text x="6" y="46" class="cn">一轮之内：一版前缀，四个分支</text>`;
   s += `<rect x="6" y="58" width="132" height="32" rx="3" class="cboxP"/>`;
@@ -249,7 +249,7 @@ function chartAmortize() { // 图 4：未命中按前缀版本数计，不按分
     s += `<rect x="${x}" y="58" width="76" height="32" rx="3" class="cbox"/>`;
     s += `<text x="${x + 38}" y="79" class="cbs" text-anchor="middle">分支 ${i + 1}</text>`;
   }
-  s += `<text x="170" y="112" class="cs">四个分支共享同一版字节（同模型；见 A3.6）：命中 ×4、未命中 ×0</text>`;
+  s += `<text x="170" y="112" class="cs">四个分支共享同一版字节：命中 ×4、未命中 ×0</text>`;
   s += `<text x="170" y="130" class="cs">（若要按分支计未命中，这里就该是 ×4）</text>`;
   // 换代
   s += `<line x1="72" y1="94" x2="72" y2="136" class="csig" marker-end="url(#arwE)"/>`;
