@@ -243,7 +243,7 @@ function chartAmortize() { // 图 4：未命中按前缀版本数计，不按分
   s += `<text x="6" y="46" class="cn">一轮之内：一版前缀，四个分支</text>`;
   s += `<rect x="6" y="58" width="132" height="32" rx="3" class="cboxP"/>`;
   s += `<text x="72" y="79" class="cbs" text-anchor="middle">前缀 第 v 版</text>`;
-  s += `<line x1="138" y1="74" x2="164" y2="74" class="cflow" marker-end="url(#arwD)"/>`;
+  s += `<line x1="138" y1="74" x2="169" y2="74" class="cflow" marker-end="url(#arwD)"/>`;
   for (let i = 0; i < 4; i++) {
     const x = 170 + i * 84;
     s += `<rect x="${x}" y="58" width="76" height="32" rx="3" class="cbox"/>`;
@@ -252,7 +252,7 @@ function chartAmortize() { // 图 4：未命中按前缀版本数计，不按分
   s += `<text x="170" y="112" class="cs">四个分支共享同一版字节：命中 ×4、未命中 ×0</text>`;
   s += `<text x="170" y="130" class="cs">（若要按分支计未命中，这里就该是 ×4）</text>`;
   // 换代
-  s += `<line x1="72" y1="94" x2="72" y2="136" class="csig" marker-end="url(#arwE)"/>`;
+  s += `<line x1="72" y1="94" x2="72" y2="141" class="csig" marker-end="url(#arwE)"/>`;
   s += `<text x="82" y="120" class="cs">换代</text>`;
   s += `<rect x="6" y="142" width="132" height="32" rx="3" class="cboxP"/>`;
   s += `<text x="72" y="163" class="cbs" text-anchor="middle">前缀 第 v+1 版</text>`;
