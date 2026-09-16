@@ -359,6 +359,9 @@ const MNOTES = [
 const R = { cap: 0, wide: 0, term: 0, note: 0, hits: [], cnt: new Map() };
 const bump = (type, t, n = 1) => { const k = type + '|' + t; R.cnt.set(k, (R.cnt.get(k) || 0) + n); };
 const plainOf = s => s.replace(/<[^>]+>/g, '');
+// 锚点比对一律先去掉全部空白：中英混排的空格是排版层的事，
+// 作者（或格式化脚本）在“子Agent”与“子 Agent”之间改一次，不该让边注与图静默消失。
+const squash = s => s.replace(/\s+/g, '');
 function enhance(html, plain, ln) {
   let h = html;
   TERMS.forEach(t => {
@@ -373,7 +376,7 @@ function enhance(html, plain, ln) {
     R.hits.push([wide ? '主张·宽胶囊' : '标记·窄胶囊', ln, t.slice(0, 34) + (t.length > 34 ? '…' : '') + '（' + t.length + '字）']);
     return '<span class="' + (wide ? 'claim' : 'em') + '">' + t + '</span>';
   });
-  const mi = MNOTES.findIndex(m => plain.startsWith(m[0]));
+  const mi = MNOTES.findIndex(m => squash(plain).startsWith(squash(m[0])));
   // 注记插在区块**末尾**：屏幕上是绝对定位（位置与源码顺序无关，仍与首行齐平），
   // 打印时是流内块；若插在开头，列表项会被拆成"孤立项目符号 + 换行正文"。
   if (mi >= 0) { R.note++; R.hits.push(['边注', ln, MNOTES[mi][1] + ' ' + MNOTES[mi][2]]); h = h.replace(/<\/(p|li)>$/, `%%MN${mi}%%</$1>`); }
@@ -403,10 +406,10 @@ for (const b of blocks) {
     if (curSection.startsWith('正文')) h = enhance(h, plain, b.ln);
     out.push(h);
     // 架构图：紧跟在“以这一理念出发……”与合并那一段之后，正文一字未动
-    if (curSection.startsWith('正文') && plain.startsWith('以这一理念出发')) {
+    if (curSection.startsWith('正文') && squash(plain).startsWith('以这一理念出发')) {
       out.push(figure(chartArch(), '图 2　一轮的动作。四段前缀按此顺序固定：前两段整轮逐字节不变，后两段（意图映射、系统状态）每版更新，所以未命中只落在后两段上。环境侧底层内容只有一份，每个分支一份虚拟工作区、写时才占空间。合并由主 Agent 以单写者执行，依据是它制定契约时的那份上下文；分支的上下文随分支消失，原文留在 git 里。数据源：正文“具体实现”一节、附录2 A2.4。'));
     }
-    if (curSection.startsWith('正文') && plain.startsWith('全部子Agent回归后')) {
+    if (curSection.startsWith('正文') && squash(plain).startsWith('全部子Agent回归后')) {
       out.push(figure(chartScales(), '图 3　两个尺度。目标级由用户给出（一次任务边界），主 Agent 把它拆成多轮；轮级由归并触发——一轮结束、前缀换代，主 Agent 的上下文随之重建。一轮之内前缀不换版本，所以那一版只在换代时付一次未命中。不易解耦或规模小的时候，分支数可以收敛到一：那是线性结构，而线性是这个循环结构的特例——落地仍然委派。数据源：正文“具体实现”一节。'));
     }
     continue;
@@ -730,6 +733,26 @@ console.log('  自检：残留占位符 %d，残留 url(fonts/ %d，svg %d 个�
 console.log('\n  阅读增强：胶囊 %d 处（其中整句主张 %d、短语标记 %d）、专名 %d 处、边注 %d 处',
   R.cap, R.wide, R.cap - R.wide, R.term, R.note);
 for (const [k, ln, t] of R.hits.sort((a, b) => a[1] - b[1])) console.log('    ' + k + '  L' + ln + '  ' + t);
+
+/* ---- 锚点自检：装置是按文字前缀挂在 Markdown 上的，改一个字就会静默掉一个 ----
+   静默失效是最难发现的一类事故（图少一张、边注少一条，页面照样生成），
+   所以这里把「该出现的都出现了没有」写成硬检查，失败就以非零码退出构建。 */
+{
+  const bad = [];
+  const figN = (html.match(/<figure/g) || []).length;
+  if (figN !== 6) bad.push(`图应为 6 张，实际 ${figN} 张`);
+  if (R.note !== MNOTES.length) bad.push(`边注应为 ${MNOTES.length} 条，实际 ${R.note} 条`);
+  if (R.term !== 2) bad.push(`专名应为 2 处，实际 ${R.term} 处`);
+  const figCaps = [...html.matchAll(/<figcaption>图 (\d)/g)].map(m => m[1]).sort();
+  if (figCaps.join('') !== '123456') bad.push(`图的编号不齐：${figCaps.join(',') || '（无）'}`);
+  if (bad.length) {
+    console.error('\n✗ 锚点自检失败：');
+    bad.forEach(b => console.error('   · ' + b));
+    console.error('   （多半是 build-html.mjs 里的文字前缀锚点与 Markdown 不再逐字对得上）');
+    process.exit(1);
+  }
+  console.log('\n  锚点自检：图 %d 张（编号 1–6 齐全）、边注 %d 条、专名 %d 处 —— 全部命中', figN, R.note, R.term);
+}
 const miss = TERMS.filter(t => !R.cnt.get('term|' + t));
 console.log(miss.length ? '  ✗ 未命中的目标：' + miss.map(t => plainOf(t).slice(0, 20)).join(' | ') : '  ✓ 专名目标都已命中');
 if (mnMiss.length) console.log('  ✗ 边注目标未解析：%s', mnMiss.join(' | '));

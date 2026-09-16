@@ -36,3 +36,15 @@ if (footMax) console.log('页脚文字横向 %s – %s mm（应在 22 – 172 �
 if (noteMax) console.log('页边注横向 %s – %s mm（期望 178 – 202）', mm(noteMin), mm(noteMax));
 console.log('页  词数    左     右     上     下');
 for (const r of rows) console.log(String(r[0]).padStart(3) + String(r[1]).padStart(7) + String(r[2]).padStart(7) + String(r[3]).padStart(7) + String(r[4]).padStart(7) + String(r[5]).padStart(7));
+
+/* 底部留白：版心底线 = 页高 297 − 下边距 20 − 页脚占位 2 = 275mm。
+   REVISION 每一版都记「合计多少 mm、超 30mm 的有几页」，原来这两个数是手工从上面那张表里加出来的；
+   放在这里由同一个脚本一起算，记录才可复算。 */
+{
+  const blank = rows.filter(r => typeof r[5] === 'number').map(r => [r[0], +(275 - r[5]).toFixed(1)]);
+  const total = blank.reduce((a, [, v]) => a + v, 0);
+  const big = blank.filter(([, v]) => v > 30);
+  console.log('\n底部留白：合计 %s mm（%d 页，均 %s mm/页）；超 30mm 的 %d 页 —— %s',
+    total.toFixed(1), blank.length, (total / blank.length).toFixed(1), big.length,
+    big.map(([p, v]) => 'p' + p + ' ' + v + 'mm').join('、') || '（无）');
+}
