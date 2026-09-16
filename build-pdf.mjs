@@ -419,6 +419,47 @@ function pageTexts(file, pages) {
 }
 const squash = s => s.replace(/\s+/g, '');
 
+/* 目录页码的权威来源：锚点自己的链接目标。
+   文本反查对短标题会误判——「具体实现」这种词在正文行文里先出现一次（"Git 只是一个具体实现"），
+   于是页码被记成那个更早的页（实测：记成 p6，标题实际在 p7）。
+   锚点的目标页既是读者点下去会到的那一页，也正是目录该印的页码，所以优先用它，文本反查只当兜底。 */
+function pdfDestPages(file) {
+  const s = fs.readFileSync(file).toString('latin1');
+  const objs = new Map();
+  const re = /(\d+)\s+0\s+obj\b/g;
+  let m;
+  while ((m = re.exec(s))) {
+    const end = s.indexOf('endobj', m.index + m[0].length);
+    if (end < 0) continue;
+    let body = s.slice(m.index + m[0].length, end);
+    const si = body.indexOf('stream');
+    if (si >= 0) body = body.slice(0, si);
+    objs.set(+m[1], body);
+  }
+  let root = null, destBody = null;
+  for (const [num, body] of objs) {
+    if (root === null && /\/Type\s*\/Pages/.test(body) && !/\/Parent/.test(body)) root = num;
+    if (destBody === null && /\/sec-1\s*\[/.test(body)) destBody = body;
+  }
+  if (root === null || destBody === null) return new Map();
+  const pageObjs = [];
+  const walk = num => {
+    const body = objs.get(num) || '';
+    const k = body.match(/\/Kids\s*\[([^\]]*)\]/);
+    if (!k) { pageObjs.push(num); return; }
+    for (const r of k[1].matchAll(/(\d+)\s+0\s+R/g)) walk(+r[1]);
+  };
+  walk(root);
+  const pageOf = new Map(pageObjs.map((num, i) => [num, i + 1]));
+  const out = new Map();
+  const dre = /\/([A-Za-z0-9_.\-]+)\s*\[\s*(\d+)\s+0\s+R\s*\/[A-Za-z]+/g;
+  while ((m = dre.exec(destBody))) {
+    const p = pageOf.get(+m[2]);
+    if (p) out.set(m[1], p);
+  }
+  return out;
+}
+
 async function mode_tocpages(cdp, sessionId) {
   await injectPdfFonts(cdp, sessionId);
   await cdp.send('Page.printToPDF', {
@@ -434,6 +475,8 @@ async function mode_tocpages(cdp, sessionId) {
     return {id: id, text: (el ? el.textContent : a.textContent).replace(/[\\s#]+/g, ' ').trim(), label: a.textContent.trim()}; }))`));
   const n = pdfPages(DIR + '/_pass.pdf');
   const texts = pageTexts(DIR + '/_pass.pdf', n);
+  const anchored = pdfDestPages(DIR + '/_pass.pdf');
+  let fromDest = 0, fromText = 0;
   if (process.env.DBG) {
     console.log('    [dbg] pdfinfo 页数 %d · 文本段数 %d · 段3 长度 %d', n, texts.length, (texts[2] || '').length);
     console.log('    [dbg] 段3 开头: %j', (texts[2] || '').replace(/\s+/g, ' ').slice(0, 90));
@@ -452,17 +495,18 @@ async function mode_tocpages(cdp, sessionId) {
     if (needles.filter(n => n && s.includes(n)).length >= tocMin) tocPages.add(i + 1);
   });
   for (const t of targets) {
+    if (anchored.has(t.id)) { map[t.id] = anchored.get(t.id); fromDest++; continue; }
     const needle = squash(t.text).slice(0, 14);
     let hit = 0;
     for (let p = 2; p <= texts.length; p++) {
       if (tocPages.has(p)) continue;
       if (squash(texts[p - 1] || '').includes(needle)) { hit = p; break; }
     }
-    if (hit) map[t.id] = hit; else miss.push(t.label.slice(0, 20));
+    if (hit) { map[t.id] = hit; fromText++; } else miss.push(t.label.slice(0, 20));
   }
   fs.writeFileSync(TOCJSON, JSON.stringify(map, null, 1));
-  console.log('  目录页码：解析 %d / %d 条标题（PDF 共 %d 页；目录页 = 第 %s 页）',
-    Object.keys(map).length, targets.length, n, [...tocPages].join(','));
+  console.log('  目录页码：解析 %d / %d 条标题（PDF 共 %d 页；目录页 = 第 %s 页；锚点目标 %d 条 / 文本兜底 %d 条）',
+    Object.keys(map).length, targets.length, n, [...tocPages].join(','), fromDest, fromText);
   if (miss.length) console.log('    未定位到页码：' + miss.join(' / '));
 }
 

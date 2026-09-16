@@ -115,3 +115,47 @@ if (fs.existsSync(PDF)) {
 
 }
 
+/* ---- 目录页码 vs 链接目标：目录印的页码，必须等于读者点下去会到的那一页 ----
+   文本反查对短标题会误判（「具体实现」在正文行文里先出现一次，页码就被记到那一页），
+   所以这里的权威来源是锚点自己的目标页；build-pdf.mjs 的 tocpages 也按同一口径生成。 */
+{
+  const buf = fs.readFileSync(PDF).toString('latin1');
+  const objs = new Map();
+  const re = /(\d+)\s+0\s+obj\b/g;
+  let m;
+  while ((m = re.exec(buf))) {
+    const end = buf.indexOf('endobj', m.index + m[0].length);
+    if (end < 0) continue;
+    let b = buf.slice(m.index + m[0].length, end);
+    const si = b.indexOf('stream');
+    if (si >= 0) b = b.slice(0, si);
+    objs.set(+m[1], b);
+  }
+  let root = null, destBody = null;
+  for (const [num, b] of objs) {
+    if (root === null && /\/Type\s*\/Pages/.test(b) && !/\/Parent/.test(b)) root = num;
+    if (destBody === null && /\/sec-1\s*\[/.test(b)) destBody = b;
+  }
+  const pageObjs = [];
+  const walk = num => {
+    const b = objs.get(num) || '';
+    const k = b.match(/\/Kids\s*\[([^\]]*)\]/);
+    if (!k) { pageObjs.push(num); return; }
+    for (const r of k[1].matchAll(/(\d+)\s+0\s+R/g)) walk(+r[1]);
+  };
+  if (root !== null) walk(root);
+  const pageOf = new Map(pageObjs.map((num, i) => [num, i + 1]));
+  const dest = new Map();
+  if (destBody) {
+    for (const r of destBody.matchAll(/\/([A-Za-z0-9_.\-]+)\s*\[\s*(\d+)\s+0\s+R\s*\/[A-Za-z]+/g)) {
+      const p = pageOf.get(+r[2]);
+      if (p) dest.set(r[1], p);
+    }
+  }
+  const toc = JSON.parse(fs.readFileSync(DIR + '/_tocpages.json', 'utf8'));
+  const bad2 = Object.entries(toc).filter(([id, want]) => dest.get(id) !== want);
+  console.log('目录页码 vs 链接目标：%d 条，不一致 %d 条 %s',
+    Object.keys(toc).length, bad2.length,
+    bad2.map(([id, w]) => id + '(印 ' + w + ' → 链接 ' + dest.get(id) + ')').join(' '));
+}
+
