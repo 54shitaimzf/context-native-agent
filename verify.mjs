@@ -4,8 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 // 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
 const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
-const SRC = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
-const OUT = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.html';
+const SRC = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.md';
+const OUT = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.html';
 const md = fs.readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n').split('\n');
 const html = fs.readFileSync(OUT, 'utf8');
 
@@ -79,7 +79,7 @@ const visible = body.replace(/<[^>]*>/g, '').replace(/\$\$[\s\S]*?\$\$|\$[^\$\n]
 console.log('残留占位符：%d，正文可见的字面星号：%d', (html.match(/\u0001|%%MN/g) || []).length, (visible.match(/\*/g) || []).length);
 
 /* ---- 成品 PDF 的文字落点：确认版心确实是 22–172mm，没有被叠加成双重边距 ---- */
-const PDF = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf';
+const PDF = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.pdf';
 if (fs.existsSync(PDF)) {
   const zlib = await import('node:zlib');
   const buf = fs.readFileSync(PDF);

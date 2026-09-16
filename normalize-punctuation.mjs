@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 // 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
 const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
-const FILE = process.env.DOC_MD || DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
+const FILE = process.env.DOC_MD || DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.md';
 const args = process.argv.slice(2);
 const write = args.includes('--write');
 const papersOnly = args.includes('--papers-only');

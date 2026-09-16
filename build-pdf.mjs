@@ -14,8 +14,8 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 // 分隔符一律换成正斜杠：DIR 会被拼进 file:// URL（见 injectPdfFonts），
 // Windows 的反斜杠在那里面是非法字符，@font-face 会静默失效。
 const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
-const HTML = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.html';
-const PDF = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf';
+const HTML = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.html';
+const PDF = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.pdf';
 const SHOTS = DIR + '/_shots';
 const PROFILE = DIR + '/.pdfprofile';
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';

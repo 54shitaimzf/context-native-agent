@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 // 文档目录默认取本脚本所在目录，可用 DOC_DIR 覆盖
 const DIR = (process.env.DOC_DIR || path.dirname(fileURLToPath(import.meta.url))).split(path.sep).join('/');
-const SRC = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.md';
-const OUT = DIR + '/Agent架构革新：迈向上下文原生智能-Context-Native Agent.html';
+const SRC = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.md';
+const OUT = DIR + '/Agent重架构：迈向上下文原生智能-Context-Native Agent.html';
 // KaTeX 的 dist 目录：默认找本仓库的 node_modules，可用 KATEX_DIR 指向别处
 const KATEX = process.env.KATEX_DIR || DIR + '/node_modules/katex/dist';
 if (!fs.existsSync(KATEX + '/katex.min.css')) {

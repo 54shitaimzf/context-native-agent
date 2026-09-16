@@ -5,7 +5,7 @@
 判断内嵌情况用的是 Poppler 的 `pdffonts`，可以自己复核：
 
 ```bash
-pdffonts "Agent架构革新：迈向上下文原生智能-Context-Native Agent.pdf"
+pdffonts "Agent重架构：迈向上下文原生智能-Context-Native Agent.pdf"
 ```
 
 ## 一、KaTeX 0.16.47

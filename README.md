@@ -42,11 +42,11 @@ AI 干活，靠的是每一轮喂给它的那段内容（行话叫"上下文"）
 
 ## 仓库里有什么
 
-三种格式，同名不同扩展名（`Agent架构革新：迈向上下文原生智能-Context-Native Agent.*`）：
+三种格式，同名不同扩展名（`Agent重架构：迈向上下文原生智能-Context-Native Agent.*`）：
 
-- **[`.md`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.md)** —— 源文件，唯一事实来源
-- **[`.html`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.html)** —— 单文件网页版，公式也在文件里，断网可用
-- **[`.pdf`](Agent架构革新：迈向上下文原生智能-Context-Native%20Agent.pdf)** —— A4 排版成品，45 页，6 张图，带页码目录与可点链接
+- **[`.md`](Agent重架构：迈向上下文原生智能-Context-Native%20Agent.md)** —— 源文件，唯一事实来源
+- **[`.html`](Agent重架构：迈向上下文原生智能-Context-Native%20Agent.html)** —— 单文件网页版，公式也在文件里，断网可用
+- **[`.pdf`](Agent重架构：迈向上下文原生智能-Context-Native%20Agent.pdf)** —— A4 排版成品，45 页，6 张图，带页码目录与可点链接
 
 另有 `REVISION.md`：改了哪里、原来是什么、改后是什么，逐条记着。以及 `UNDERSTANDING.md`：这篇的口径、容易读错的地方与边界，给准备引用或接手的人看。
 
